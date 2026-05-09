@@ -1,8 +1,8 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <title>Magasin Store - Réceptionnaire</title>
 
@@ -33,13 +33,14 @@ body{
     justify-content:center;
     align-items:center;
     z-index:5000;
+    padding:20px;
 }
 
 .login-box{
     background:white;
-    width:90%;
+    width:100%;
     max-width:420px;
-    padding:30px;
+    padding:30px 20px;
     border-radius:20px;
     box-shadow:0 10px 30px rgba(0,0,0,0.3);
     animation:fadeIn 0.4s ease;
@@ -60,6 +61,7 @@ body{
     text-align:center;
     margin-bottom:10px;
     color:#111;
+    font-size:1.8rem;
 }
 
 .login-box p{
@@ -94,11 +96,10 @@ body{
     background:#333;
 }
 
-/* HEADER */
-
+/* HEADER RESPONSIVE */
 header{
     background:white;
-    padding:20px;
+    padding:15px;
     border-radius:15px;
     margin-bottom:20px;
     display:flex;
@@ -111,19 +112,20 @@ header{
 
 header h1{
     color:#111;
-    font-size:28px;
+    font-size:1.5rem;
 }
 
 .user-info{
     background:#f0f2f5;
-    padding:12px 18px;
+    padding:10px 15px;
     border-radius:12px;
-    font-size:14px;
+    font-size:13px;
     color:#333;
+    word-break:break-word;
 }
 
 .search-box{
-    width:300px;
+    width:280px;
 }
 
 .search-box input{
@@ -131,15 +133,14 @@ header h1{
     padding:12px;
     border-radius:10px;
     border:1px solid #ccc;
-    font-size:15px;
+    font-size:14px;
 }
 
-/* TABLES DES DEMANDES */
-
+/* SECTION DES DEMANDES RESPONSIVE */
 .demandes-section{
     background:white;
     border-radius:20px;
-    padding:20px;
+    padding:15px;
     margin-bottom:25px;
     box-shadow:0 4px 10px rgba(0,0,0,0.08);
 }
@@ -147,7 +148,7 @@ header h1{
 .demandes-section h2{
     margin-bottom:15px;
     color:#111;
-    font-size:22px;
+    font-size:1.2rem;
     border-left:4px solid #ff9800;
     padding-left:12px;
 }
@@ -155,15 +156,15 @@ header h1{
 .demandes-table{
     width:100%;
     border-collapse:collapse;
-    overflow-x:auto;
-    display:block;
+    min-width:550px;
 }
 
 .demandes-table th,
 .demandes-table td{
-    padding:12px;
+    padding:10px 8px;
     text-align:left;
     border-bottom:1px solid #e0e0e0;
+    font-size:13px;
 }
 
 .demandes-table th{
@@ -174,10 +175,11 @@ header h1{
 
 .status{
     display:inline-block;
-    padding:5px 12px;
+    padding:4px 10px;
     border-radius:20px;
-    font-size:12px;
+    font-size:11px;
     font-weight:bold;
+    white-space:nowrap;
 }
 
 .status-en-attente{
@@ -195,11 +197,10 @@ header h1{
     color:#c62828;
 }
 
-/* PRODUCTS */
-
+/* GRILLE PRODUITS RESPONSIVE */
 .products{
     display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+    grid-template-columns:repeat(auto-fill, minmax(280px, 1fr));
     gap:20px;
 }
 
@@ -227,23 +228,26 @@ header h1{
 
 .reference{
     color:#777;
-    font-size:14px;
+    font-size:13px;
     margin-bottom:8px;
+    word-break:break-word;
 }
 
 .designation{
-    font-size:20px;
+    font-size:1.1rem;
     font-weight:bold;
     margin-bottom:12px;
     color:#111;
+    word-break:break-word;
 }
 
 .stock{
     display:inline-block;
-    padding:8px 12px;
+    padding:6px 12px;
     border-radius:20px;
     font-weight:bold;
     margin-bottom:15px;
+    font-size:13px;
 }
 
 .stock-ok{
@@ -277,8 +281,26 @@ header h1{
     background:#444;
 }
 
-/* MODAL */
+.btn:disabled{
+    opacity:0.5;
+    cursor:not-allowed;
+}
 
+/* Bouton déconnexion */
+.logout-btn{
+    background:#dc3545;
+    padding:8px 16px;
+    border-radius:12px;
+    font-size:14px;
+    width:auto;
+    display:inline-block;
+}
+
+.logout-btn:hover{
+    background:#b02a37;
+}
+
+/* MODAL RESPONSIVE */
 .modal{
     position:fixed;
     top:0;
@@ -290,14 +312,15 @@ header h1{
     justify-content:center;
     align-items:center;
     z-index:1000;
+    padding:20px;
 }
 
 .modal-content{
     background:white;
-    width:90%;
+    width:100%;
     max-width:400px;
     border-radius:20px;
-    padding:25px;
+    padding:25px 20px;
     animation:popup 0.3s ease;
 }
 
@@ -314,11 +337,14 @@ header h1{
 
 .modal-content h2{
     margin-bottom:20px;
+    font-size:1.3rem;
 }
 
 .modal-content p{
     margin-bottom:10px;
     color:#555;
+    font-size:14px;
+    word-break:break-word;
 }
 
 .modal-content input{
@@ -334,6 +360,12 @@ header h1{
 .modal-buttons{
     display:flex;
     gap:10px;
+    flex-wrap:wrap;
+}
+
+.modal-buttons .btn{
+    flex:1;
+    min-width:100px;
 }
 
 .confirm{
@@ -356,25 +388,114 @@ header h1{
     display:none;
 }
 
-@media(max-width:600px){
+/* Conteneur pour scroll horizontal des tables */
+.table-wrapper{
+    overflow-x:auto;
+    border-radius:12px;
+}
 
+/* MEDIA QUERIES */
+@media(max-width:768px){
+    body{
+        padding:15px;
+    }
+    
     header{
         flex-direction:column;
-        align-items:flex-start;
+        align-items:stretch;
     }
-
+    
     .search-box{
         width:100%;
     }
     
-    .demandes-table{
-        font-size:12px;
+    .demandes-section{
+        padding:12px;
     }
     
     .demandes-table th,
     .demandes-table td{
-        padding:8px;
+        padding:8px 6px;
+        font-size:11px;
     }
+    
+    .products{
+        grid-template-columns:repeat(auto-fill, minmax(250px, 1fr));
+        gap:15px;
+    }
+    
+    .card img{
+        height:150px;
+    }
+    
+    .designation{
+        font-size:1rem;
+    }
+    
+    .modal-content{
+        padding:20px 15px;
+    }
+    
+    .modal-content h2{
+        font-size:1.2rem;
+    }
+    
+    .modal-buttons{
+        flex-direction:column;
+    }
+    
+    .modal-buttons .btn{
+        width:100%;
+    }
+}
+
+@media(max-width:480px){
+    .products{
+        grid-template-columns:1fr;
+    }
+    
+    .demandes-table{
+        min-width:500px;
+    }
+    
+    .user-info{
+        font-size:12px;
+        word-break:break-all;
+    }
+    
+    .login-box{
+        padding:25px 15px;
+    }
+    
+    .login-box h1{
+        font-size:1.5rem;
+    }
+}
+
+/* Styles pour les écrans très larges */
+@media(min-width:1400px){
+    .products{
+        grid-template-columns:repeat(auto-fill, minmax(320px, 1fr));
+    }
+    
+    body{
+        max-width:1400px;
+        margin:0 auto;
+    }
+}
+
+/* Améliorations générales */
+.text-center{
+    text-align:center;
+}
+
+.products-container{
+    min-height:200px;
+}
+
+.scrollable-table{
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
 }
 
 </style>
@@ -428,9 +549,14 @@ header h1{
 
     </div>
 
-    <div class="search-box">
-        <input type="text" id="searchInput"
-        placeholder="Rechercher un produit...">
+    <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+        <div class="search-box">
+            <input type="text" id="searchInput"
+            placeholder="🔍 Rechercher un produit...">
+        </div>
+        <button class="btn logout-btn" onclick="deconnexion()">
+            🚪 Déconnexion
+        </button>
     </div>
 
 </header>
@@ -441,7 +567,7 @@ header h1{
 
     <h2>📋 Mes Demandes</h2>
 
-    <div style="overflow-x:auto;">
+    <div class="table-wrapper scrollable-table">
 
         <table class="demandes-table" id="demandesTable">
 
@@ -520,6 +646,9 @@ header h1{
 // Configuration Firebase
 const BASE = "https://magaza-f6681-default-rtdb.europe-west1.firebasedatabase.app";
 
+// URL de redirection pour les magasiniers
+const MAGASINIER_REDIRECT_URL = "https://moh2982004.github.io/aebphf/Magasinier.html";
+
 let produits = [];
 let produitsFirebaseKeys = {};
 let currentUser = null;
@@ -527,6 +656,22 @@ let produitSelectionne = null;
 let demandes = [];
 
 const container = document.getElementById("productsContainer");
+
+// ========== FONCTION DE DÉCONNEXION ==========
+function deconnexion() {
+    // Effacer les données de session
+    currentUser = null;
+    // Cacher la page principale
+    document.getElementById("mainPage").classList.add("hidden");
+    // Afficher l'écran de connexion
+    document.getElementById("loginContainer").style.display = "flex";
+    // Réinitialiser les champs
+    document.getElementById("typeIdentifiant").value = "";
+    document.getElementById("identifiantInput").value = "";
+    // Vider le conteneur des produits
+    container.innerHTML = "";
+    alert("🔓 Vous avez été déconnecté avec succès.");
+}
 
 // ========== CHARGER LES PRODUITS DEPUIS FIREBASE ==========
 async function loadProductsFromFirebase() {
@@ -632,7 +777,7 @@ function afficherDemandes() {
             <td>${demande.designationProduit || ""}</td>
             <td>${demande.quantite || 0}</td>
             <td><span class="status ${statusClass}">${statusText}</span></td>
-            <td>${demande.nomMagasinier ? demande.nomMagasinier : "-"}</td>
+            <tr>${demande.nomMagasinier ? demande.nomMagasinier : "-"}</td>
         `;
         
         tbody.appendChild(row);
@@ -759,7 +904,7 @@ async function validerDemande() {
     }
 }
 
-// ========== AUTHENTIFICATION ==========
+// ========== AUTHENTIFICATION AVEC REDIRECTION POUR MAGASINIER ==========
 async function connexion() {
     const type = document.getElementById("typeIdentifiant").value;
     const identifiant = document.getElementById("identifiantInput").value.trim();
@@ -795,27 +940,37 @@ async function connexion() {
             }
         }
         
-        if(foundUser && foundUser.uet === "LOGISTIQUE") {
-            currentUser = {
-                id: userKey,
-                ipn: foundUser.ipn,
-                nom: foundUser.nom,
-                uet: foundUser.uet
-            };
-            
-            document.getElementById("loginContainer").style.display = "none";
-            document.getElementById("mainPage").classList.remove("hidden");
-            
-            document.getElementById("userInfo").innerHTML = 
-                "<strong>" + type + " :</strong> " + identifiant + " | UET: " + foundUser.uet;
-            
-            await loadProductsFromFirebase();
-        } 
-        else if(foundUser && foundUser.uet === "MAGASINIER") {
-            alert("⛔ ACCÈS REFUSÉ : Cette interface est réservée aux RÉCEPTIONNAIRES.");
+        if(foundUser) {
+            // Vérifier si l'utilisateur est un MAGASINIER
+            if(foundUser.uet === "MAGASINIER") {
+                // Rediriger vers la page des magasiniers
+                alert(`🔐 Redirection vers l'interface Magasinier...`);
+                window.location.href = MAGASINIER_REDIRECT_URL;
+                return;
+            }
+            // Vérifier si l'utilisateur est un RÉCEPTIONNAIRE
+            else if(foundUser.uet === "LOGISTIQUE") {
+                currentUser = {
+                    id: userKey,
+                    ipn: foundUser.ipn,
+                    nom: foundUser.nom,
+                    uet: foundUser.uet
+                };
+                
+                document.getElementById("loginContainer").style.display = "none";
+                document.getElementById("mainPage").classList.remove("hidden");
+                
+                document.getElementById("userInfo").innerHTML = 
+                    "<strong>" + type + " :</strong> " + identifiant + " | UET: " + foundUser.uet;
+                
+                await loadProductsFromFirebase();
+            }
+            else {
+                alert("❌ Accès refusé. Rôle non reconnu.");
+            }
         }
         else {
-            alert("❌ Accès refusé. Vous n'êtes pas autorisé.");
+            alert("❌ Accès refusé. Utilisateur non trouvé.");
         }
         
     } catch(error) {
@@ -825,14 +980,17 @@ async function connexion() {
 }
 
 // ========== RECHERCHE ==========
-document.getElementById("searchInput").addEventListener("input", function() {
-    const value = this.value.toLowerCase();
-    const filtered = produits.filter(p =>
-        p.designation.toLowerCase().includes(value) ||
-        p.reference.toLowerCase().includes(value)
-    );
-    afficherProduits(filtered);
-});
+const searchInput = document.getElementById("searchInput");
+if(searchInput){
+    searchInput.addEventListener("input", function() {
+        const value = this.value.toLowerCase();
+        const filtered = produits.filter(p =>
+            p.designation.toLowerCase().includes(value) ||
+            p.reference.toLowerCase().includes(value)
+        );
+        afficherProduits(filtered);
+    });
+}
 
 // ========== INITIALISATION ==========
 console.log("Page prête - Interface Réceptionnaire");
