@@ -1,0 +1,843 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Magasin Store - Réceptionnaire</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, Helvetica, sans-serif;
+}
+
+body{
+    background:#f4f6f9;
+    padding:20px;
+}
+
+/* LOGIN */
+
+.login-container{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:linear-gradient(135deg,#111,#333);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    z-index:5000;
+}
+
+.login-box{
+    background:white;
+    width:90%;
+    max-width:420px;
+    padding:30px;
+    border-radius:20px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.3);
+    animation:fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn{
+    from{
+        transform:translateY(20px);
+        opacity:0;
+    }
+    to{
+        transform:translateY(0);
+        opacity:1;
+    }
+}
+
+.login-box h1{
+    text-align:center;
+    margin-bottom:10px;
+    color:#111;
+}
+
+.login-box p{
+    text-align:center;
+    color:#666;
+    margin-bottom:25px;
+}
+
+.login-box input,
+.login-box select{
+    width:100%;
+    padding:14px;
+    border-radius:12px;
+    border:1px solid #ccc;
+    margin-bottom:18px;
+    font-size:15px;
+}
+
+.login-btn{
+    width:100%;
+    padding:14px;
+    border:none;
+    border-radius:12px;
+    background:black;
+    color:white;
+    font-size:16px;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+.login-btn:hover{
+    background:#333;
+}
+
+/* HEADER */
+
+header{
+    background:white;
+    padding:20px;
+    border-radius:15px;
+    margin-bottom:20px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    box-shadow:0 4px 10px rgba(0,0,0,0.08);
+    flex-wrap:wrap;
+    gap:15px;
+}
+
+header h1{
+    color:#111;
+    font-size:28px;
+}
+
+.user-info{
+    background:#f0f2f5;
+    padding:12px 18px;
+    border-radius:12px;
+    font-size:14px;
+    color:#333;
+}
+
+.search-box{
+    width:300px;
+}
+
+.search-box input{
+    width:100%;
+    padding:12px;
+    border-radius:10px;
+    border:1px solid #ccc;
+    font-size:15px;
+}
+
+/* TABLES DES DEMANDES */
+
+.demandes-section{
+    background:white;
+    border-radius:20px;
+    padding:20px;
+    margin-bottom:25px;
+    box-shadow:0 4px 10px rgba(0,0,0,0.08);
+}
+
+.demandes-section h2{
+    margin-bottom:15px;
+    color:#111;
+    font-size:22px;
+    border-left:4px solid #ff9800;
+    padding-left:12px;
+}
+
+.demandes-table{
+    width:100%;
+    border-collapse:collapse;
+    overflow-x:auto;
+    display:block;
+}
+
+.demandes-table th,
+.demandes-table td{
+    padding:12px;
+    text-align:left;
+    border-bottom:1px solid #e0e0e0;
+}
+
+.demandes-table th{
+    background:#f8f9fa;
+    font-weight:bold;
+    color:#333;
+}
+
+.status{
+    display:inline-block;
+    padding:5px 12px;
+    border-radius:20px;
+    font-size:12px;
+    font-weight:bold;
+}
+
+.status-en-attente{
+    background:#fff3e0;
+    color:#e65100;
+}
+
+.status-valide{
+    background:#e8f5e9;
+    color:#2e7d32;
+}
+
+.status-refuse{
+    background:#ffebee;
+    color:#c62828;
+}
+
+/* PRODUCTS */
+
+.products{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+    gap:20px;
+}
+
+.card{
+    background:white;
+    border-radius:18px;
+    overflow:hidden;
+    box-shadow:0 5px 15px rgba(0,0,0,0.08);
+    transition:0.3s;
+}
+
+.card:hover{
+    transform:translateY(-5px);
+}
+
+.card img{
+    width:100%;
+    height:180px;
+    object-fit:cover;
+}
+
+.card-content{
+    padding:15px;
+}
+
+.reference{
+    color:#777;
+    font-size:14px;
+    margin-bottom:8px;
+}
+
+.designation{
+    font-size:20px;
+    font-weight:bold;
+    margin-bottom:12px;
+    color:#111;
+}
+
+.stock{
+    display:inline-block;
+    padding:8px 12px;
+    border-radius:20px;
+    font-weight:bold;
+    margin-bottom:15px;
+}
+
+.stock-ok{
+    background:#d4edda;
+    color:#155724;
+}
+
+.stock-low{
+    background:#fff3cd;
+    color:#856404;
+}
+
+.stock-out{
+    background:#f8d7da;
+    color:#721c24;
+}
+
+.btn{
+    width:100%;
+    padding:12px;
+    border:none;
+    border-radius:12px;
+    background:#000;
+    color:white;
+    font-size:16px;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+.btn:hover{
+    background:#444;
+}
+
+/* MODAL */
+
+.modal{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.5);
+    display:none;
+    justify-content:center;
+    align-items:center;
+    z-index:1000;
+}
+
+.modal-content{
+    background:white;
+    width:90%;
+    max-width:400px;
+    border-radius:20px;
+    padding:25px;
+    animation:popup 0.3s ease;
+}
+
+@keyframes popup{
+    from{
+        transform:scale(0.8);
+        opacity:0;
+    }
+    to{
+        transform:scale(1);
+        opacity:1;
+    }
+}
+
+.modal-content h2{
+    margin-bottom:20px;
+}
+
+.modal-content p{
+    margin-bottom:10px;
+    color:#555;
+}
+
+.modal-content input{
+    width:100%;
+    padding:12px;
+    border-radius:10px;
+    border:1px solid #ccc;
+    margin-top:10px;
+    margin-bottom:20px;
+    font-size:16px;
+}
+
+.modal-buttons{
+    display:flex;
+    gap:10px;
+}
+
+.confirm{
+    background:#28a745;
+}
+
+.confirm:hover{
+    background:#1e7e34;
+}
+
+.cancel{
+    background:#dc3545;
+}
+
+.cancel:hover{
+    background:#b02a37;
+}
+
+.hidden{
+    display:none;
+}
+
+@media(max-width:600px){
+
+    header{
+        flex-direction:column;
+        align-items:flex-start;
+    }
+
+    .search-box{
+        width:100%;
+    }
+    
+    .demandes-table{
+        font-size:12px;
+    }
+    
+    .demandes-table th,
+    .demandes-table td{
+        padding:8px;
+    }
+}
+
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+
+<div class="login-container" id="loginContainer">
+
+    <div class="login-box">
+
+        <h1>🏬 Magasin Store</h1>
+
+        <p>Identification Réceptionnaire</p>
+
+        <select id="typeIdentifiant">
+
+            <option value="">Choisir type identification</option>
+
+            <option value="IPN">IPN</option>
+
+            <option value="UET">UET</option>
+
+            <option value="Nom">Nom et Prénom</option>
+
+        </select>
+
+        <input type="text" id="identifiantInput"
+        placeholder="Entrer votre identification">
+
+        <button class="login-btn" onclick="connexion()">
+            Entrer
+        </button>
+
+    </div>
+
+</div>
+
+<!-- PAGE -->
+
+<div id="mainPage" class="hidden">
+
+<header>
+
+    <div>
+
+        <h1>🏬 Magasin Store</h1>
+
+        <div class="user-info" id="userInfo"></div>
+
+    </div>
+
+    <div class="search-box">
+        <input type="text" id="searchInput"
+        placeholder="Rechercher un produit...">
+    </div>
+
+</header>
+
+<!-- TABLEAU DES DEMANDES DU RÉCEPTIONNAIRE CONNECTÉ -->
+
+<div class="demandes-section" id="demandesSection">
+
+    <h2>📋 Mes Demandes</h2>
+
+    <div style="overflow-x:auto;">
+
+        <table class="demandes-table" id="demandesTable">
+
+            <thead>
+
+                <tr>
+                    <th>Date</th>
+                    <th>Heure</th>
+                    <th>Référence</th>
+                    <th>Produit</th>
+                    <th>Quantité</th>
+                    <th>Statut</th>
+                    <th>Magasinier</th>
+                </tr>
+
+            </thead>
+
+            <tbody id="demandesList"></tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+<!-- PRODUITS -->
+
+<div class="products" id="productsContainer"></div>
+
+</div>
+
+<!-- MODAL -->
+
+<div class="modal" id="modal">
+
+    <div class="modal-content">
+
+        <h2>Demande Produit</h2>
+
+        <p><strong>Référence :</strong>
+            <span id="modalRef"></span>
+        </p>
+
+        <p><strong>Désignation :</strong>
+            <span id="modalName"></span>
+        </p>
+
+        <p><strong>Stock disponible :</strong>
+            <span id="modalStock"></span>
+        </p>
+
+        <input type="number"
+        id="quantityInput"
+        placeholder="Quantité demandée">
+
+        <div class="modal-buttons">
+
+            <button class="btn confirm"
+            onclick="validerDemande()">
+                Valider
+            </button>
+
+            <button class="btn cancel"
+            onclick="closeModal()">
+                Annuler
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+// Configuration Firebase
+const BASE = "https://magaza-f6681-default-rtdb.europe-west1.firebasedatabase.app";
+
+let produits = [];
+let produitsFirebaseKeys = {};
+let currentUser = null;
+let produitSelectionne = null;
+let demandes = [];
+
+const container = document.getElementById("productsContainer");
+
+// ========== CHARGER LES PRODUITS DEPUIS FIREBASE ==========
+async function loadProductsFromFirebase() {
+    try {
+        const response = await fetch(`${BASE}/produits.json`);
+        const data = await response.json();
+        
+        produits = [];
+        produitsFirebaseKeys = {};
+        
+        for(let key in data) {
+            const produit = data[key];
+            produits.push({
+                firebaseKey: key,
+                reference: produit.reference,
+                designation: produit.designation,
+                stockActuel: produit.stockActuel || 0,
+                stockInitial: produit.stockInitial || 0,
+                stockMax: produit.stockMax || 0,
+                description: produit.description || "",
+                quantiteParBoite: produit.quantiteParBoite || 1,
+                image: produit.image || "https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?q=80&w=1200&auto=format&fit=crop",
+                codeBarre: produit.codeBarre || ""
+            });
+            produitsFirebaseKeys[produit.reference] = key;
+        }
+        
+        await loadDemandes();
+        afficherProduits(produits);
+        
+    } catch(error) {
+        console.error("Erreur chargement produits:", error);
+        alert("Erreur de connexion à la base de données");
+    }
+}
+
+// ========== CHARGER LES DEMANDES DU RÉCEPTIONNAIRE ==========
+async function loadDemandes() {
+    if(!currentUser) return;
+    
+    try {
+        const response = await fetch(`${BASE}/demandes.json`);
+        const data = await response.json();
+        
+        demandes = [];
+        for(let key in data) {
+            const demande = data[key];
+            // Filtrer par le réceptionnaire connecté
+            if(demande.ipnUtilisateur === currentUser.ipn || 
+               demande.nomUtilisateur === currentUser.nom) {
+                demandes.push({
+                    firebaseKey: key,
+                    ...demande
+                });
+            }
+        }
+        
+        // Trier par date décroissante (plus récent d'abord)
+        demandes.sort((a,b) => (b.date + b.heure).localeCompare(a.date + a.heure));
+        
+        afficherDemandes();
+        
+    } catch(error) {
+        console.error("Erreur chargement demandes:", error);
+    }
+}
+
+// ========== AFFICHER LES DEMANDES ==========
+function afficherDemandes() {
+    const tbody = document.getElementById("demandesList");
+    if(!tbody) return;
+    
+    tbody.innerHTML = "";
+    
+    if(demandes.length === 0) {
+        tbody.innerHTML = "<tr><td colspan='7' style='text-align:center;'>Aucune demande trouvée</td></tr>";
+        return;
+    }
+    
+    demandes.forEach(demande => {
+        let statusClass = "";
+        let statusText = "";
+        
+        switch(demande.statut) {
+            case "valide":
+                statusClass = "status-valide";
+                statusText = "✅ Validée";
+                break;
+            case "refuse":
+                statusClass = "status-refuse";
+                statusText = "❌ Refusée";
+                break;
+            default:
+                statusClass = "status-en-attente";
+                statusText = "⏳ En attente";
+        }
+        
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td>${demande.date || ""}</td>
+            <td>${demande.heure || ""}</td>
+            <td>${demande.referenceProduit || ""}</td>
+            <td>${demande.designationProduit || ""}</td>
+            <td>${demande.quantite || 0}</td>
+            <td><span class="status ${statusClass}">${statusText}</span></td>
+            <td>${demande.nomMagasinier ? demande.nomMagasinier : "-"}</td>
+        `;
+        
+        tbody.appendChild(row);
+    });
+}
+
+// ========== AFFICHER LES PRODUITS ==========
+function afficherProduits(liste) {
+    container.innerHTML = "";
+    
+    if(liste.length === 0) {
+        container.innerHTML = "<div style='text-align:center;padding:50px;'>Aucun produit trouvé</div>";
+        return;
+    }
+    
+    liste.forEach(produit => {
+        let stockClass = "";
+        if(produit.stockActuel > 10) {
+            stockClass = "stock-ok";
+        } else if(produit.stockActuel > 0) {
+            stockClass = "stock-low";
+        } else {
+            stockClass = "stock-out";
+        }
+        
+        const card = document.createElement("div");
+        card.className = "card";
+        
+        card.innerHTML = `
+            <img src="${produit.image}" onerror="this.src='https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?q=80&w=1200&auto=format&fit=crop'">
+            <div class="card-content">
+                <div class="reference">
+                    Référence : ${produit.reference}
+                </div>
+                <div class="designation">
+                    ${produit.designation}
+                </div>
+                <div class="stock ${stockClass}">
+                    Stock : ${produit.stockActuel}
+                </div>
+                <button class="btn" ${produit.stockActuel === 0 ? 'disabled style="opacity:0.5;"' : ''}>
+                    ${produit.stockActuel === 0 ? 'Rupture' : 'Demander'}
+                </button>
+            </div>
+        `;
+        
+        const btn = card.querySelector(".btn");
+        if(produit.stockActuel > 0) {
+            btn.addEventListener("click", () => {
+                openModal(produit);
+            });
+        }
+        
+        container.appendChild(card);
+    });
+}
+
+// ========== MODAL ==========
+function openModal(produit) {
+    produitSelectionne = produit;
+    document.getElementById("modal").style.display = "flex";
+    document.getElementById("modalRef").innerText = produit.reference;
+    document.getElementById("modalName").innerText = produit.designation;
+    document.getElementById("modalStock").innerText = produit.stockActuel;
+    document.getElementById("quantityInput").value = "";
+}
+
+function closeModal() {
+    document.getElementById("modal").style.display = "none";
+    produitSelectionne = null;
+}
+
+// ========== VALIDER LA DEMANDE - ENREGISTREMENT DANS DEMANDES ==========
+async function validerDemande() {
+    const qty = parseInt(document.getElementById("quantityInput").value);
+    
+    if(!qty || qty <= 0) {
+        alert("Veuillez entrer une quantité valide.");
+        return;
+    }
+    
+    if(qty > produitSelectionne.stockActuel) {
+        alert("Quantité insuffisante en stock.");
+        return;
+    }
+    
+    const now = new Date();
+    const dateStr = now.toISOString().split('T')[0];
+    const heureStr = now.toTimeString().split(' ')[0];
+    
+    // Créer la demande dans la table "demandes"
+    const demande = {
+        typeOperation: "DEMANDE",
+        referenceProduit: produitSelectionne.reference,
+        designationProduit: produitSelectionne.designation,
+        quantite: qty,
+        date: dateStr,
+        heure: heureStr,
+        ipnUtilisateur: currentUser.ipn,
+        nomUtilisateur: currentUser.nom,
+        uetUtilisateur: currentUser.uet,
+        nomMagasinier: "",
+        ipnMagasinier: "",
+        statut: "en_attente"
+    };
+    
+    try {
+        // Enregistrer la demande
+        await fetch(`${BASE}/demandes.json`, {
+            method: "POST",
+            body: JSON.stringify(demande)
+        });
+        
+        alert(`✅ Demande envoyée : ${qty} ${qty > 1 ? 'pièces' : 'pièce'} demandée(s) pour ${produitSelectionne.designation}`);
+        
+        closeModal();
+        
+        // Recharger les demandes
+        await loadDemandes();
+        
+    } catch(error) {
+        console.error("Erreur:", error);
+        alert("Erreur lors de l'enregistrement de la demande");
+    }
+}
+
+// ========== AUTHENTIFICATION ==========
+async function connexion() {
+    const type = document.getElementById("typeIdentifiant").value;
+    const identifiant = document.getElementById("identifiantInput").value.trim();
+    
+    if(type === "" || identifiant === "") {
+        alert("Veuillez remplir les informations.");
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${BASE}/utilisateurs.json`);
+        const data = await response.json();
+        
+        let foundUser = null;
+        let userKey = null;
+        
+        for(let key in data) {
+            const user = data[key];
+            if(type === "IPN" && user.ipn === identifiant) {
+                foundUser = user;
+                userKey = key;
+                break;
+            }
+            else if(type === "UET" && user.uet === identifiant) {
+                foundUser = user;
+                userKey = key;
+                break;
+            }
+            else if(type === "Nom" && user.nom && user.nom.toLowerCase() === identifiant.toLowerCase()) {
+                foundUser = user;
+                userKey = key;
+                break;
+            }
+        }
+        
+        if(foundUser && foundUser.uet === "LOGISTIQUE") {
+            currentUser = {
+                id: userKey,
+                ipn: foundUser.ipn,
+                nom: foundUser.nom,
+                uet: foundUser.uet
+            };
+            
+            document.getElementById("loginContainer").style.display = "none";
+            document.getElementById("mainPage").classList.remove("hidden");
+            
+            document.getElementById("userInfo").innerHTML = 
+                "<strong>" + type + " :</strong> " + identifiant + " | UET: " + foundUser.uet;
+            
+            await loadProductsFromFirebase();
+        } 
+        else if(foundUser && foundUser.uet === "MAGASINIER") {
+            alert("⛔ ACCÈS REFUSÉ : Cette interface est réservée aux RÉCEPTIONNAIRES.");
+        }
+        else {
+            alert("❌ Accès refusé. Vous n'êtes pas autorisé.");
+        }
+        
+    } catch(error) {
+        console.error("Erreur authentification:", error);
+        alert("Erreur de connexion au serveur");
+    }
+}
+
+// ========== RECHERCHE ==========
+document.getElementById("searchInput").addEventListener("input", function() {
+    const value = this.value.toLowerCase();
+    const filtered = produits.filter(p =>
+        p.designation.toLowerCase().includes(value) ||
+        p.reference.toLowerCase().includes(value)
+    );
+    afficherProduits(filtered);
+});
+
+// ========== INITIALISATION ==========
+console.log("Page prête - Interface Réceptionnaire");
+
+</script>
+
+</body>
+</html>
