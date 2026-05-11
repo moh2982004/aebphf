@@ -156,7 +156,7 @@ header h1{
 .demandes-table{
     width:100%;
     border-collapse:collapse;
-    min-width:550px;
+    min-width:650px;
 }
 
 .demandes-table th,
@@ -195,6 +195,22 @@ header h1{
 .status-refuse{
     background:#ffebee;
     color:#c62828;
+}
+
+.commentaire-cell{
+    max-width:200px;
+    word-wrap:break-word;
+    white-space:normal;
+    font-size:12px;
+    color:#666;
+}
+
+.commentaire-text{
+    display:inline-block;
+    background:#f5f5f5;
+    padding:4px 8px;
+    border-radius:8px;
+    font-style:italic;
 }
 
 /* GRILLE PRODUITS RESPONSIVE */
@@ -482,6 +498,10 @@ header h1{
         font-size:11px;
     }
     
+    .commentaire-cell{
+        max-width:150px;
+    }
+    
     .products{
         grid-template-columns:repeat(auto-fill, minmax(250px, 1fr));
         gap:15px;
@@ -518,7 +538,7 @@ header h1{
     }
     
     .demandes-table{
-        min-width:500px;
+        min-width:600px;
     }
     
     .user-info{
@@ -644,6 +664,7 @@ header h1{
                     <th>Quantité</th>
                     <th>Statut</th>
                     <th>Magasinier</th>
+                    <th>Commentaire</th>
                     <th>Action</th>
                 </tr>
 
@@ -932,7 +953,7 @@ function afficherDemandes() {
     }
     
     if(demandesFiltrees.length === 0) {
-        tbody.innerHTML = "<tr><td colspan='8' style='text-align:center;'>Aucune demande trouvée</td></tr>";
+        tbody.innerHTML = "<tr><td colspan='9' style='text-align:center;'>Aucune demande trouvée</td></tr>";
         return;
     }
     
@@ -956,7 +977,13 @@ function afficherDemandes() {
         
         const estMasquee = demandesMasquees.has(demande.firebaseKey);
         
-        const row = document.createElement("tr");
+        // Afficher le commentaire si la demande est refusée
+        let commentaireHtml = "-";
+        if(demande.statut === "refuse" && demande.commentaire) {
+            commentaireHtml = `<span class="commentaire-text">📝 ${escapeHtml(demande.commentaire)}</span>`;
+        } else if(demande.statut === "refuse") {
+            commentaireHtml = `<span class="commentaire-text" style="color:#999;">Aucun commentaire</span>`;
+        }
         
         // Ajouter le bouton d'action uniquement pour les demandes validées
         let actionButton = "";
@@ -970,6 +997,8 @@ function afficherDemandes() {
             actionButton = "-";
         }
         
+        const row = document.createElement("tr");
+        
         row.innerHTML = `
             <td>${demande.date || ""}</td>
             <td>${demande.heure || ""}</td>
@@ -978,11 +1007,20 @@ function afficherDemandes() {
             <td>${demande.quantite || 0}</td>
             <td><span class="status ${statusClass}">${statusText}</span></td>
             <td>${demande.nomMagasinier ? demande.nomMagasinier : "-"}</td>
+            <td class="commentaire-cell">${commentaireHtml}</td>
             <td style="text-align:center;">${actionButton}</td>
         `;
         
         tbody.appendChild(row);
     });
+}
+
+// Fonction utilitaire pour échapper les caractères HTML
+function escapeHtml(text) {
+    if(!text) return "";
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
 
 // ========== AFFICHER LES PRODUITS ==========
@@ -1054,59 +1092,81 @@ function closeModal() {
     produitSelectionne = null;
 }
 
-// ========== VALIDER LA DEMANDE - ENREGISTREMENT DANS DEMANDES ==========
-async function validerDemande() {
-    const qty = parseInt(document.getElementById("quantityInput").value);
+// ========== AFFICHER LES DEMANDES ==========
+function afficherDemandes() {
+    const tbody = document.getElementById("demandesList");
+    if(!tbody) return;
     
-    if(!qty || qty <= 0) {
-        alert("Veuillez entrer une quantité valide.");
+    tbody.innerHTML = "";
+    
+    let demandesFiltrees = demandes;
+    
+    // Filtrer les demandes masquées si nécessaire
+    if(!afficherMasques) {
+        demandesFiltrees = demandes.filter(d => !demandesMasquees.has(d.firebaseKey));
+    }
+    
+    if(demandesFiltrees.length === 0) {
+        tbody.innerHTML = "<tr><td colspan='9' style='text-align:center;'>Aucune demande trouvée</td></tr>";
         return;
     }
     
-    if(qty > produitSelectionne.stockActuel) {
-        alert("Quantité insuffisante en stock.");
-        return;
-    }
-    
-    const now = new Date();
-    const dateStr = now.toISOString().split('T')[0];
-    const heureStr = now.toTimeString().split(' ')[0];
-    
-    // Créer la demande dans la table "demandes"
-    const demande = {
-        typeOperation: "DEMANDE",
-        referenceProduit: produitSelectionne.reference,
-        designationProduit: produitSelectionne.designation,
-        quantite: qty,
-        date: dateStr,
-        heure: heureStr,
-        ipnUtilisateur: currentUser.ipn,
-        nomUtilisateur: currentUser.nom,
-        uetUtilisateur: currentUser.uet,
-        nomMagasinier: "",
-        ipnMagasinier: "",
-        statut: "en_attente"
-    };
-    
-    try {
-        // Enregistrer la demande
-        await fetch(`${BASE}/demandes.json`, {
-            method: "POST",
-            body: JSON.stringify(demande)
-        });
+    demandesFiltrees.forEach(demande => {
+        let statusClass = "";
+        let statusText = "";
         
-        alert(`✅ Demande envoyée : ${qty} ${qty > 1 ? 'pièces' : 'pièce'} demandée(s) pour ${produitSelectionne.designation}`);
+        switch(demande.statut) {
+            case "valide":
+                statusClass = "status-valide";
+                statusText = "✅ Validée";
+                break;
+            case "refuse":
+                statusClass = "status-refuse";
+                statusText = "❌ Refusée";
+                break;
+            default:
+                statusClass = "status-en-attente";
+                statusText = "⏳ En attente";
+        }
         
-        closeModal();
+        const estMasquee = demandesMasquees.has(demande.firebaseKey);
         
-        // Recharger les demandes et les compteurs
-        await loadDemandes();
-        await compterDemandesParProduit();
+        // Affichage du commentaire de refus (utilisation de commentaireRefus)
+        let commentaireHtml = "-";
+        if(demande.statut === "refuse" && demande.commentaireRefus) {
+            commentaireHtml = `<span class="commentaire-text">📝 ${escapeHtml(demande.commentaireRefus)}</span>`;
+        } else if(demande.statut === "refuse") {
+            commentaireHtml = `<span class="commentaire-text" style="color:#999;">Aucun commentaire</span>`;
+        }
         
-    } catch(error) {
-        console.error("Erreur:", error);
-        alert("Erreur lors de l'enregistrement de la demande");
-    }
+        // Ajouter le bouton d'action uniquement pour les demandes validées
+        let actionButton = "";
+        if(demande.statut === "valide") {
+            if(estMasquee) {
+                actionButton = `<button class="show-request-btn" onclick="showRequest('${demande.firebaseKey}')">🔄 Afficher</button>`;
+            } else {
+                actionButton = `<button class="hide-request-btn" onclick="hideRequest('${demande.firebaseKey}')">🙈 Masquer</button>`;
+            }
+        } else {
+            actionButton = "-";
+        }
+        
+        const row = document.createElement("tr");
+        
+        row.innerHTML = `
+            <td>${demande.date || ""}</td>
+            <td>${demande.heure || ""}</td>
+            <td>${demande.referenceProduit || ""}</td>
+            <td>${demande.designationProduit || ""}</td>
+            <td>${demande.quantite || 0}</td>
+            <td><span class="status ${statusClass}">${statusText}</span></td>
+            <td>${demande.nomMagasinier ? demande.nomMagasinier : "-"}</td>
+            <td class="commentaire-cell">${commentaireHtml}</td>
+            <td style="text-align:center;">${actionButton}</td>
+        `;
+        
+        tbody.appendChild(row);
+    });
 }
 
 // ========== AUTHENTIFICATION AVEC REDIRECTION POUR MAGASINIER ==========
