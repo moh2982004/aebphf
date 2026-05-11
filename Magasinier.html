@@ -358,7 +358,7 @@ hr { margin: 15px 0; }
     padding: 10px 12px;
 }
 .demandes-table {
-    min-width: 700px;
+    min-width: 750px;
 }
 .demandes-table th,
 .demandes-table td {
@@ -407,6 +407,18 @@ hr { margin: 15px 0; }
     flex-wrap: wrap;
 }
 
+/* MODAL COMMENTAIRE */
+.comment-modal-content {
+    max-width: 500px;
+}
+.comment-textarea {
+    width: 100%;
+    padding: 12px;
+    border-radius: 16px;
+    border: 1px solid #ccc;
+    font-family: inherit;
+    resize: vertical;
+}
 /* UTILITAIRES */
 .hidden { display: none; }
 .text-center { text-align: center; }
@@ -686,7 +698,10 @@ hr { margin: 15px 0; }
 <div id="mainApp" class="main-content">
 
 <header>
+
+
 <div>
+
 
  <div class="logo-group">
                
@@ -696,14 +711,18 @@ hr { margin: 15px 0; }
                     
                
             </div>
-<h2>🏬 AEB MAGASIN </h2>
+
+
+<h2>🏬 AEB MAGASIN</h2>
 <p style="margin:0; font-size:12px; color:#475569;">Interface réservée aux magasiniers</p>
 </div>
+
 <div class="user-panel">
     <span id="sessionUserName" class="user-badge">👤 En attente</span>
     <span id="sessionRoleBadge" class="user-badge">🏬 MAGASINIER</span>
     <button class="btn silver" onclick="logoutAndLock()" style="padding:4px 12px;">🚪 Déconnexion</button>
 </div>
+
 </header>
 
 <!-- Boutons d'action responsives -->
@@ -745,6 +764,7 @@ hr { margin: 15px 0; }
                     <th>Heure</th>
                     <th>Réf.</th>
                     <th>Désignation</th>
+                    <th>Emplacement</th>
                     <th>Qté</th>
                     <th>Réceptionnaire</th>
                     <th>UET</th>
@@ -775,6 +795,19 @@ hr { margin: 15px 0; }
         </thead>
         <tbody id="table"></tbody>
     </table>
+</div>
+
+<!-- MODAL COMMENTAIRE POUR REFUS -->
+<div class="modal" id="commentModal">
+    <div class="modal-content comment-modal-content">
+        <h3>💬 Motif du refus</h3>
+        <label for="refusCommentaire">Veuillez indiquer la raison du refus :</label>
+        <textarea id="refusCommentaire" rows="4" class="comment-textarea" placeholder="Ex: Stock insuffisant, produit non disponible, etc."></textarea>
+        <div style="display:flex; gap:10px; justify-content:center; margin-top:20px;">
+            <button class="btn green" onclick="confirmRefusWithComment()">✅ Confirmer le refus</button>
+            <button class="btn silver" onclick="closeModal('commentModal')">❌ Annuler</button>
+        </div>
+    </div>
 </div>
 
 <!-- MODAL INVENTAIRE AVEC RECHERCHE PAR RÉFÉRENCE -->
@@ -814,7 +847,7 @@ hr { margin: 15px 0; }
         <table id="inventoryTable" style="min-width:400px;">
             <thead><tr><th>Réf</th><th>Désignation</th><th>Stock actuel</th><th>Nouveau stock</th><th>Action</th></tr></thead>
             <tbody id="inventoryList"></tbody>
-         </table>
+          </table>
     </div>
     <button class="btn dark" onclick="closeModal('inventoryModal')">Fermer</button>
 </div></div>
@@ -1029,6 +1062,7 @@ let currentEditProductData = null;
 let inventorySearchProductKey = null;
 let inventorySearchProductData = null;
 let demandesFiltrees = [];
+let pendingRefusDemandeId = null; // Pour stocker l'ID de la demande lors du refus
 
 // ========== GESTION DES MAGASINIERS ==========
 async function loadMagasiniersList() {
@@ -1216,11 +1250,24 @@ async function loadDemandes() {
         demandes = [];
         for(let key in data) {
             const demande = data[key];
+            // Récupérer l'emplacement du produit
+            let emplacement = "";
+            if(demande.referenceProduit) {
+                const prodRes = await fetch(`${BASE}/produits.json`);
+                const produitsData = await prodRes.json();
+                for(let k in produitsData) {
+                    if(produitsData[k].reference === demande.referenceProduit) {
+                        emplacement = produitsData[k].emplacement || "";
+                        break;
+                    }
+                }
+            }
             demandes.push({ 
                 firebaseKey: key, 
                 ...demande,
                 quantiteOriginale: demande.quantite,
-                masque: demande.masque === true
+                masque: demande.masque === true,
+                produitEmplacement: emplacement
             });
         }
         demandes.sort((a,b) => (b.date + b.heure).localeCompare(a.date + a.heure));
@@ -1275,6 +1322,58 @@ async function masquerDemande(demandeId) {
     appliquerFiltresDemandes();
 }
 
+function preparerRefusAvecCommentaire(demandeId) {
+    pendingRefusDemandeId = demandeId;
+    document.getElementById("refusCommentaire").value = "";
+    openModal("commentModal");
+}
+
+async function confirmRefusWithComment() {
+    const commentaire = document.getElementById("refusCommentaire").value.trim();
+    if(!commentaire) {
+        alert("Veuillez saisir un commentaire pour justifier le refus.");
+        return;
+    }
+    if(!pendingRefusDemandeId) return;
+    
+    await fetch(`${BASE}/demandes/${pendingRefusDemandeId}.json`, { 
+        method: "PATCH", 
+        body: JSON.stringify({ 
+            statut: "refuse", 
+            nomMagasinier: currentUser.nom, 
+            ipnMagasinier: currentUser.ipn, 
+            dateRefus: new Date().toISOString().split('T')[0],
+            commentaireRefus: commentaire
+        }) 
+    });
+    
+    // Enregistrer l'opération de refus dans l'historique
+    const demande = demandes.find(d => d.firebaseKey === pendingRefusDemandeId);
+    if(demande) {
+        await fetch(`${BASE}/operations.json`, { 
+            method: "POST", 
+            body: JSON.stringify({ 
+                typeOperation: "REFUS DEMANDE", 
+                referenceProduit: demande.referenceProduit, 
+                designationProduit: demande.designationProduit, 
+                quantite: demande.quantite,
+                commentaireRefus: commentaire,
+                date: new Date().toISOString().split('T')[0], 
+                heure: new Date().toTimeString().split(' ')[0], 
+                nomUtilisateur: demande.nomUtilisateur,
+                uetUtilisateur: demande.uetUtilisateur,
+                nomMagasinier: currentUser.nom, 
+                ipnMagasinier: currentUser.ipn 
+            }) 
+        });
+    }
+    
+    alert(`❌ Demande refusée avec commentaire : "${commentaire}"`);
+    closeModal("commentModal");
+    pendingRefusDemandeId = null;
+    await loadDemandes();
+}
+
 function afficherDemandes() {
     const tbody = document.getElementById("demandesList");
     if(!tbody) return;
@@ -1285,7 +1384,7 @@ function afficherDemandes() {
     const toutes = [...enAttente, ...autres];
     
     if(toutes.length === 0) { 
-        tbody.innerHTML = "<tr><td colspan='9' class='text-center'>Aucune demande<\/td><\/tr>"; 
+        tbody.innerHTML = "<tr><td colspan='10' class='text-center'>Aucune demande<\/td><\/tr>"; 
         return; 
     }
     
@@ -1306,11 +1405,14 @@ function afficherDemandes() {
                         <button class="btn cyan btn-small" onclick="modifierQuantiteDemande('${d.firebaseKey}', parseInt(document.getElementById('qte_${d.firebaseKey}').value))">✏️</button>
                     </div>
                     <button class="btn green btn-small" onclick="validerDemande('${d.firebaseKey}')">✅ Valider</button>
-                    <button class="btn red btn-small" onclick="refuserDemande('${d.firebaseKey}')">❌ Refuser</button>
+                    <button class="btn red btn-small" onclick="preparerRefusAvecCommentaire('${d.firebaseKey}')">❌ Refuser</button>
                 </div>
             `;
         } else if(d.statut === "valide") {
             actionsHtml = `<button class="btn silver btn-small" onclick="masquerDemande('${d.firebaseKey}')">🙈 Masquer</button>`;
+        } else if(d.statut === "refuse") {
+            const commentaire = d.commentaireRefus ? `<br><span style="font-size:10px; color:#888;">📝 ${escapeHtml(d.commentaireRefus.substring(0, 30))}${d.commentaireRefus.length > 30 ? '...' : ''}</span>` : '';
+            actionsHtml = `<span style="color:#888;">Refusé${commentaire}</span>`;
         } else {
             actionsHtml = '<span style="color:#888;">-</span>';
         }
@@ -1320,10 +1422,11 @@ function afficherDemandes() {
             <td>${d.heure || ""}</td>
             <td>${escapeHtml(d.referenceProduit || "")}</td>
             <td>${escapeHtml(d.designationProduit || "")}</td>
+            <td><strong>${escapeHtml(d.produitEmplacement || "-")}</strong></td>
             <td><strong>${d.quantite || 0}</strong></td>
             <td>${escapeHtml(d.nomUtilisateur || "")}</td>
             <td>${escapeHtml(d.uetUtilisateur || "")}</td>
-            <td><span class="status ${statusClass}">${statusText}</span></td>
+            <td class="status-cell"><span class="status ${statusClass}">${statusText}</span></td>
             <td class="action-buttons">${actionsHtml}</td>
         `;
         tbody.appendChild(row);
@@ -1392,7 +1495,7 @@ async function validerDemande(demandeId) {
     await loadDemandes();
 }
 
-async function refuserDemande(demandeId) {
+async function refuserDemande(demandeId, commentaire) {
     if(!confirm("Refuser cette demande ?")) return;
     await fetch(`${BASE}/demandes/${demandeId}.json`, { 
         method: "PATCH", 
@@ -1400,7 +1503,8 @@ async function refuserDemande(demandeId) {
             statut: "refuse", 
             nomMagasinier: currentUser.nom, 
             ipnMagasinier: currentUser.ipn, 
-            dateRefus: new Date().toISOString().split('T')[0] 
+            dateRefus: new Date().toISOString().split('T')[0],
+            commentaireRefus: commentaire || ""
         }) 
     });
     alert("❌ Demande refusée."); 
@@ -1476,7 +1580,7 @@ function renderProductsWithSort() {
             <td>${p.dateDernierInventaire || "-"}</td>
             <td>${p.dernierStockAvantInventaire !== undefined ? p.dernierStockAvantInventaire : "-"}</td>
             <td>${item.statusText}</td>
-         </tr>`;
+          </tr>`;
     });
 }
 
