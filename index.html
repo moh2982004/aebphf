@@ -70,8 +70,7 @@ body{
     margin-bottom:25px;
 }
 
-.login-box input,
-.login-box select{
+.login-box input{
     width:100%;
     padding:14px;
     border-radius:12px;
@@ -595,24 +594,16 @@ header h1{
 
         <p>Identification Réceptionnaire</p>
 
-        <select id="typeIdentifiant">
-
-            <option value="">Choisir type identification</option>
-
-            <option value="IPN">IPN</option>
-
-            <option value="UET">UET</option>
-
-            <option value="Nom">Nom et Prénom</option>
-
-        </select>
-
-        <input type="text" id="identifiantInput"
-        placeholder="Entrer votre identification">
+        <input type="text" id="identifiantInput" 
+               placeholder="Entrer votre IPN ou Nom et Prénom">
 
         <button class="login-btn" onclick="connexion()">
             Entrer
         </button>
+        
+        <p style="margin-top:15px; font-size:12px; color:#999;">
+            🔐 Utilisez votre IPN ou votre nom complet
+        </p>
 
     </div>
 
@@ -865,7 +856,6 @@ function deconnexion() {
     // Afficher l'écran de connexion
     document.getElementById("loginContainer").style.display = "flex";
     // Réinitialiser les champs
-    document.getElementById("typeIdentifiant").value = "";
     document.getElementById("identifiantInput").value = "";
     // Vider le conteneur des produits
     container.innerHTML = "";
@@ -1120,7 +1110,7 @@ async function validerDemande() {
         heure: heureStr,
         ipnUtilisateur: currentUser.ipn,
         nomUtilisateur: currentUser.nom,
-        uetUtilisateur: currentUser.uet,
+        uetUtilisateur: currentUser.uet || "",
         nomMagasinier: "",
         ipnMagasinier: "",
         statut: "en_attente",
@@ -1148,79 +1138,87 @@ async function validerDemande() {
     }
 }
 
-// ========== AUTHENTIFICATION AVEC REDIRECTION POUR MAGASINIER ==========
+// ========== AUTHENTIFICATION SANS VÉRIFICATION DE RÔLE ==========
+// La connexion fonctionne dès que l'IPN ou le nom est trouvé dans la base
 async function connexion() {
-    const type = document.getElementById("typeIdentifiant").value;
     const identifiant = document.getElementById("identifiantInput").value.trim();
     
-    if(type === "" || identifiant === "") {
-        alert("Veuillez remplir les informations.");
+    if(identifiant === "") {
+        alert("Veuillez entrer votre IPN ou votre nom.");
         return;
     }
     
     try {
+        const loginBtn = document.querySelector('.login-btn');
+        const originalText = loginBtn.textContent;
+        loginBtn.textContent = "🔄 Vérification...";
+        loginBtn.disabled = true;
+        
+        // Récupérer tous les utilisateurs
         const response = await fetch(`${BASE}/utilisateurs.json`);
         const data = await response.json();
         
         let foundUser = null;
         let userKey = null;
         
+        // Parcourir les utilisateurs pour trouver une correspondance
         for(let key in data) {
             const user = data[key];
-            if(type === "IPN" && user.ipn === identifiant) {
+            
+            // Comparaison avec l'IPN
+            if(user.ipn && user.ipn === identifiant) {
                 foundUser = user;
                 userKey = key;
+                console.log("✅ Utilisateur trouvé par IPN:", user.ipn, "Nom:", user.nom);
                 break;
             }
-            else if(type === "UET" && user.uet === identifiant) {
+            // Comparaison avec le nom (insensible à la casse)
+            else if(user.nom && user.nom.toLowerCase() === identifiant.toLowerCase()) {
                 foundUser = user;
                 userKey = key;
-                break;
-            }
-            else if(type === "Nom" && user.nom && user.nom.toLowerCase() === identifiant.toLowerCase()) {
-                foundUser = user;
-                userKey = key;
+                console.log("✅ Utilisateur trouvé par nom:", user.nom, "IPN:", user.ipn);
                 break;
             }
         }
         
+        loginBtn.textContent = originalText;
+        loginBtn.disabled = false;
+        
         if(foundUser) {
-            // Vérifier si l'utilisateur est un MAGASINIER
-            if(foundUser.uet === "MAGASINIER") {
-                // Rediriger vers la page des magasiniers
-                alert(`🔐 Redirection vers l'interface Magasinier...`);
-                window.location.href = MAGASINIER_REDIRECT_URL;
-                return;
-            }
-            // Vérifier si l'utilisateur est un RÉCEPTIONNAIRE
-            else if(foundUser.uet === "LOGISTIQUE") {
-                currentUser = {
-                    id: userKey,
-                    ipn: foundUser.ipn,
-                    nom: foundUser.nom,
-                    uet: foundUser.uet
-                };
-                
-                document.getElementById("loginContainer").style.display = "none";
-                document.getElementById("mainPage").classList.remove("hidden");
-                
-                document.getElementById("userInfo").innerHTML = 
-                    "<strong>" + type + " :</strong> " + identifiant + " | UET: " + foundUser.uet;
-                
-                loadHiddenPreferences();
-                await loadProductsFromFirebase();
-            }
-            else {
-                alert("❌ Accès refusé. Rôle non reconnu.");
-            }
+            // Connexion réussie - AUCUNE VÉRIFICATION DE RÔLE
+            // On ouvre la page quel que soit le UET
+            currentUser = {
+                id: userKey,
+                ipn: foundUser.ipn || "Non spécifié",
+                nom: foundUser.nom || "Non spécifié",
+                uet: foundUser.uet || "Non spécifié"
+            };
+            
+            // Afficher la page principale
+            document.getElementById("loginContainer").style.display = "none";
+            document.getElementById("mainPage").classList.remove("hidden");
+            
+            document.getElementById("userInfo").innerHTML = 
+                "👤 " + currentUser.nom + " | IPN: " + currentUser.ipn + " | UET: " + currentUser.uet;
+            
+            loadHiddenPreferences();
+            await loadProductsFromFirebase();
+            
+            console.log("✅ Connexion réussie pour:", currentUser.nom);
         }
         else {
-            alert("❌ Accès refusé. Utilisateur non trouvé.");
+            alert("❌ Utilisateur non trouvé. Vérifiez votre IPN ou votre nom.");
+            console.log("Recherche échouée pour:", identifiant);
+            console.log("Utilisateurs disponibles:", data);
         }
         
     } catch(error) {
-        console.error("Erreur authentification:", error);
-        alert("Erreur de connexion au serveur");
+        console.error("❌ Erreur authentification:", error);
+        alert("Erreur de connexion au serveur. Vérifiez votre connexion internet.");
+        
+        const loginBtn = document.querySelector('.login-btn');
+        loginBtn.textContent = "Entrer";
+        loginBtn.disabled = false;
     }
 }
 
@@ -1232,8 +1230,19 @@ if(searchInput){
     });
 }
 
+// Permettre la connexion avec la touche Entrée
+const identifiantInput = document.getElementById("identifiantInput");
+if(identifiantInput) {
+    identifiantInput.addEventListener("keypress", function(event) {
+        if(event.key === "Enter") {
+            connexion();
+        }
+    });
+}
+
 // ========== INITIALISATION ==========
-console.log("Page prête - Interface Réceptionnaire");
+console.log("📦 Page prête - Interface Réceptionnaire");
+console.log("ℹ️ Connexion : entrez votre IPN ou votre nom complet");
 
 </script>
 
