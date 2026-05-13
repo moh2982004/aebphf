@@ -3,11 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-
-<title> AEB Magasin Store - Réceptionnaire</title>
+<title>AEB Magasin Store - Réceptionnaire</title>
 
 <style>
-
 *{
     margin:0;
     padding:0;
@@ -21,7 +19,6 @@ body{
 }
 
 /* LOGIN */
-
 .login-container{
     position:fixed;
     top:0;
@@ -196,8 +193,13 @@ header h1{
     color:#c62828;
 }
 
+.status-modifie{
+    background:#e3f2fd;
+    color:#1565c0;
+}
+
 .commentaire-cell{
-    max-width:200px;
+    max-width:250px;
     word-wrap:break-word;
     white-space:normal;
     font-size:12px;
@@ -210,6 +212,21 @@ header h1{
     padding:4px 8px;
     border-radius:8px;
     font-style:italic;
+}
+
+.commentaire-modification{
+    background:#e3f2fd;
+    border-left:3px solid #2196f3;
+}
+
+.commentaire-refus{
+    background:#ffebee;
+    border-left:3px solid #f44336;
+}
+
+.commentaire-info{
+    background:#e8f5e9;
+    border-left:3px solid #4caf50;
 }
 
 /* GRILLE PRODUITS RESPONSIVE */
@@ -674,44 +691,27 @@ header h1{
     overflow-x:auto;
     -webkit-overflow-scrolling:touch;
 }
-
 </style>
 </head>
 <body>
 
 <!-- LOGIN -->
-
 <div class="login-container" id="loginContainer">
-
     <div class="login-box">
-
         <h1>📦 Magasin Store</h1>
-
         <p>Identification</p>
-
-        <input type="text" id="identifiantInput" 
-               placeholder="Entrer votre IPN ou Nom et Prénom">
-
-        <button class="login-btn" onclick="connexion()">
-            Entrer
-        </button>
-        
-        <p style="margin-top:15px; font-size:12px; color:#999;">
-            🔐 Utilisez votre IPN ou votre nom complet
-        </p>
-
+        <input type="text" id="identifiantInput" placeholder="Entrer votre IPN ou Nom et Prénom">
+        <button class="login-btn" onclick="connexion()">Entrer</button>
+        <p style="margin-top:15px; font-size:12px; color:#999;">🔐 Utilisez votre IPN ou votre nom complet</p>
     </div>
-
 </div>
 
 <!-- PAGE -->
-
 <div id="mainPage" class="hidden">
 
 <header>
 
    <div>
-
 
  <div class="logo-group">
                
@@ -723,108 +723,51 @@ header h1{
             </div>
 
 
-
         <h1>🏪 AEB Magasin Store</h1>
-
         <div class="user-info" id="userInfo"></div>
-
     </div>
-
     <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
         <div class="search-box">
-            <input type="text" id="searchInput"
-            placeholder="🔍 Rechercher un produit...">
+            <input type="text" id="searchInput" placeholder="🔍 Rechercher un produit...">
         </div>
-        <button class="btn logout-btn" onclick="deconnexion()">
-            🚪 Déconnexion
-        </button>
+        <button class="btn logout-btn" onclick="deconnexion()">🚪 Déconnexion</button>
     </div>
-
 </header>
 
 <!-- TABLEAU DES DEMANDES DU RÉCEPTIONNAIRE CONNECTÉ -->
-
 <div class="demandes-section" id="demandesSection">
-
     <h2>📋 Mes Demandes</h2>
-
     <div class="table-wrapper scrollable-table">
-
         <table class="demandes-table" id="demandesTable">
-
             <thead>
-
-                <tr>
-                    <th>Date</th>
-                    <th>Heure</th>
-                    <th>Référence</th>
-                    <th>Produit</th>
-                    <th>Quantité</th>
-                    <th>Statut</th>
-                    <th>Magasinier</th>
-                    <th>Commentaire</th>
-                    <th>Action</th>
-                </tr>
-
+                <tr><th>Date</th><th>Heure</th><th>Référence</th><th>Produit</th><th>Quantité</th><th>Statut</th><th>Magasinier</th><th>Commentaire</th><th>Action</th></tr>
             </thead>
-
             <tbody id="demandesList"></tbody>
-
         </table>
-
     </div>
-
 </div>
 
 <!-- PRODUITS -->
 <div class="products-header">
     <h2>📦 Catalogue Produits</h2>
-    <button class="toggle-hidden-btn" onclick="toggleHiddenProducts()">
-        👁️ Afficher produits masqués
-    </button>
+    <button class="toggle-hidden-btn" onclick="toggleHiddenProducts()">👁️ Afficher produits masqués</button>
 </div>
-
 <div class="products" id="productsContainer"></div>
-
 </div>
 
 <!-- MODAL DEMANDE -->
 <div class="modal" id="modal">
-
     <div class="modal-content">
-
         <h2>Demande Produit</h2>
-
-        <p><strong>Référence :</strong>
-            <span id="modalRef"></span>
-        </p>
-
-        <p><strong>Désignation :</strong>
-            <span id="modalName"></span>
-        </p>
-
+        <p><strong>Référence :</strong> <span id="modalRef"></span></p>
+        <p><strong>Désignation :</strong> <span id="modalName"></span></p>
         <div class="modal-stock-info" id="modalStockInfo" style="margin-bottom:15px;"></div>
-
-        <input type="number"
-        id="quantityInput"
-        placeholder="Quantité demandée">
-
+        <input type="number" id="quantityInput" placeholder="Quantité demandée">
         <div class="modal-buttons">
-
-            <button class="btn confirm"
-            onclick="validerDemande()">
-                Valider
-            </button>
-
-            <button class="btn cancel"
-            onclick="closeModal()">
-                Annuler
-            </button>
-
+            <button class="btn confirm" onclick="validerDemande()">Valider</button>
+            <button class="btn cancel" onclick="closeModal()">Annuler</button>
         </div>
-
     </div>
-
 </div>
 
 <!-- MODAL IMAGE -->
@@ -836,11 +779,7 @@ header h1{
 </div>
 
 <script>
-
-// Configuration Firebase
 const BASE = "https://magaza-f6681-default-rtdb.europe-west1.firebasedatabase.app";
-
-// URL de redirection pour les magasiniers
 const MAGASINIER_REDIRECT_URL = "https://moh2982004.github.io/aebphf/Magasinier.html";
 
 let produits = [];
@@ -848,21 +787,19 @@ let produitsFirebaseKeys = {};
 let currentUser = null;
 let produitSelectionne = null;
 let demandes = [];
-let demandesEnAttenteParProduit = {}; // Stocke les quantités des demandes en attente par produit
-let produitsDemandes = {}; // Pour compter les demandes par produit (historique)
-let demandesMasquees = new Set(); // Stocke les IDs des demandes masquées
-let afficherMasques = false; // État d'affichage des demandes masquées
+let demandesEnAttenteParProduit = {};
+let produitsDemandes = {};
+let demandesMasquees = new Set();
+let afficherMasques = false;
 
 const container = document.getElementById("productsContainer");
 
-// Fonction pour calculer le stock disponible (stock réel - demandes en attente)
 function getStockDisponible(produit) {
     const stockReel = produit.stockActuel || 0;
     const demandesAttente = demandesEnAttenteParProduit[produit.reference] || 0;
     return stockReel - demandesAttente;
 }
 
-// Fonction pour obtenir le texte et la classe CSS du stock selon les règles (basé sur stock disponible)
 function getStockInfo(produit) {
     const stockDisponible = getStockDisponible(produit);
     const stockInitial = produit.stockInitial || 0;
@@ -876,7 +813,6 @@ function getStockInfo(produit) {
     }
 }
 
-// Fonction pour ouvrir l'image en grand
 function openImageModal(imageUrl) {
     const modal = document.getElementById("imageModal");
     const modalImg = document.getElementById("modalImage");
@@ -885,14 +821,12 @@ function openImageModal(imageUrl) {
     document.body.style.overflow = "hidden";
 }
 
-// Fonction pour fermer l'image modale
 function closeImageModal() {
     const modal = document.getElementById("imageModal");
     modal.style.display = "none";
     document.body.style.overflow = "auto";
 }
 
-// Charger les préférences de masquage depuis localStorage
 function loadHiddenPreferences() {
     const saved = localStorage.getItem(`hidden_requests_${currentUser?.ipn || 'guest'}`);
     if(saved) {
@@ -900,12 +834,10 @@ function loadHiddenPreferences() {
     }
 }
 
-// Sauvegarder les préférences de masquage
 function saveHiddenPreferences() {
     localStorage.setItem(`hidden_requests_${currentUser?.ipn || 'guest'}`, JSON.stringify([...demandesMasquees]));
 }
 
-// Basculer l'affichage des demandes masquées
 function toggleHiddenProducts() {
     afficherMasques = !afficherMasques;
     const btn = document.querySelector('.toggle-hidden-btn');
@@ -915,7 +847,6 @@ function toggleHiddenProducts() {
     afficherDemandes();
 }
 
-// Masquer une demande
 function hideRequest(requestId) {
     if(confirm('Voulez-vous masquer cette demande validée de la liste ? Vous pourrez la réafficher plus tard.')) {
         demandesMasquees.add(requestId);
@@ -924,14 +855,42 @@ function hideRequest(requestId) {
     }
 }
 
-// Afficher une demande masquée
 function showRequest(requestId) {
     demandesMasquees.delete(requestId);
     saveHiddenPreferences();
     afficherDemandes();
 }
 
-// Compter les demandes en attente par produit (pour calculer le stock disponible)
+// ========== FONCTION POUR AFFICHER TOUS LES COMMENTAIRES ==========
+function afficherTousLesCommentaires(demande) {
+    // PRIORITÉ 1: Commentaire de modification (validation modifiée par le magasinier)
+    if(demande.commentaireModification && demande.commentaireModification.trim() !== "") {
+        return `<span class="commentaire-text commentaire-modification">✏️ Modification: ${escapeHtml(demande.commentaireModification)}</span>`;
+    }
+    // PRIORITÉ 2: Commentaire de refus
+    else if(demande.commentaireRefus && demande.commentaireRefus.trim() !== "") {
+        return `<span class="commentaire-text commentaire-refus"> ${escapeHtml(demande.commentaireRefus)}</span>`;
+    }
+    // PRIORITÉ 3: Commentaire général du magasinier (pour les validations simples)
+    else if(demande.commentaireMagasinier && demande.commentaireMagasinier.trim() !== "") {
+        return `<span class="commentaire-text commentaire-info">ℹ️ Info: ${escapeHtml(demande.commentaireMagasinier)}</span>`;
+    }
+    // PRIORITÉ 4: Commentaire de validation automatique
+    else if(demande.statut === "valide" && demande.commentaireValidation && demande.commentaireValidation.trim() !== "") {
+        return `<span class="commentaire-text commentaire-info">✅ Validation: ${escapeHtml(demande.commentaireValidation)}</span>`;
+    }
+    // Messages par défaut selon le statut
+    else if(demande.statut === "valide") {
+        return `<span class="commentaire-text" style="color:#999;">✅ Acceptée - Aucun commentaire</span>`;
+    }
+    else if(demande.statut === "refuse") {
+        return `<span class="commentaire-text" style="color:#999;">- Aucun commentaire</span>`;
+    }
+    else {
+        return `<span class="commentaire-text" style="color:#999;">⏳ En attente de traitement</span>`;
+    }
+}
+
 async function compterDemandesEnAttente() {
     if(!currentUser) return;
     
@@ -944,61 +903,38 @@ async function compterDemandesEnAttente() {
         
         for(let key in data) {
             const demande = data[key];
-            
-            // Compter les demandes en attente pour le stock disponible (toutes les demandes en attente, pas seulement celles de l'utilisateur)
             if(demande.statut === "en_attente") {
                 const ref = demande.referenceProduit;
-                if(!demandesEnAttenteParProduit[ref]) {
-                    demandesEnAttenteParProduit[ref] = 0;
-                }
+                if(!demandesEnAttenteParProduit[ref]) demandesEnAttenteParProduit[ref] = 0;
                 demandesEnAttenteParProduit[ref] += demande.quantite || 0;
             }
             
-            // Compter toutes les demandes de ce réceptionnaire pour l'affichage
-            if((demande.ipnUtilisateur === currentUser.ipn || 
-               demande.nomUtilisateur === currentUser.nom) &&
-               demande.statut !== "refuse") {
-                
+            if((demande.ipnUtilisateur === currentUser.ipn || demande.nomUtilisateur === currentUser.nom) && demande.statut !== "refuse") {
                 const ref = demande.referenceProduit;
-                if(!produitsDemandes[ref]) {
-                    produitsDemandes[ref] = 0;
-                }
+                if(!produitsDemandes[ref]) produitsDemandes[ref] = 0;
                 produitsDemandes[ref] += demande.quantite || 0;
             }
         }
-        
         appliquerTriEtFiltrage();
-        
     } catch(error) {
         console.error("Erreur comptage demandes:", error);
     }
 }
 
-// Trier les produits par nombre de demandes (plus demandés en premier)
 function trierParPopularite(produitsList) {
     return produitsList.sort((a, b) => {
         const demandesA = produitsDemandes[a.reference] || 0;
         const demandesB = produitsDemandes[b.reference] || 0;
-        
-        if(demandesB !== demandesA) {
-            return demandesB - demandesA; // Plus demandé en premier
-        }
-        
-        // En cas d'égalité, trier par stock disponible (plus petit stock en premier)
+        if(demandesB !== demandesA) return demandesB - demandesA;
         const stockA = getStockDisponible(a);
         const stockB = getStockDisponible(b);
         return stockA - stockB;
     });
 }
 
-// Appliquer le tri et le filtrage
 function appliquerTriEtFiltrage() {
     let produitsFiltres = [...produits];
-    
-    // Trier par popularité
     produitsFiltres = trierParPopularite(produitsFiltres);
-    
-    // Appliquer la recherche si présente
     const searchValue = document.getElementById("searchInput")?.value.toLowerCase() || "";
     if(searchValue) {
         produitsFiltres = produitsFiltres.filter(p =>
@@ -1006,34 +942,24 @@ function appliquerTriEtFiltrage() {
             p.reference.toLowerCase().includes(searchValue)
         );
     }
-    
     afficherProduits(produitsFiltres);
 }
 
-// ========== FONCTION DE DÉCONNEXION ==========
 function deconnexion() {
-    // Effacer les données de session
     currentUser = null;
-    // Cacher la page principale
     document.getElementById("mainPage").classList.add("hidden");
-    // Afficher l'écran de connexion
     document.getElementById("loginContainer").style.display = "flex";
-    // Réinitialiser les champs
     document.getElementById("identifiantInput").value = "";
-    // Vider le conteneur des produits
     container.innerHTML = "";
     alert("👋 Vous avez été déconnecté avec succès.");
 }
 
-// ========== CHARGER LES PRODUITS DEPUIS FIREBASE ==========
 async function loadProductsFromFirebase() {
     try {
         const response = await fetch(`${BASE}/produits.json`);
         const data = await response.json();
-        
         produits = [];
         produitsFirebaseKeys = {};
-        
         for(let key in data) {
             const produit = data[key];
             produits.push({
@@ -1050,61 +976,49 @@ async function loadProductsFromFirebase() {
             });
             produitsFirebaseKeys[produit.reference] = key;
         }
-        
         await loadDemandes();
         await compterDemandesEnAttente();
-        
     } catch(error) {
         console.error("Erreur chargement produits:", error);
         alert("Erreur de connexion à la base de données");
     }
 }
 
-// ========== CHARGER LES DEMANDES DU RÉCEPTIONNAIRE ==========
 async function loadDemandes() {
     if(!currentUser) return;
-    
     try {
         const response = await fetch(`${BASE}/demandes.json`);
         const data = await response.json();
-        
         demandes = [];
         for(let key in data) {
             const demande = data[key];
-            // Filtrer par le réceptionnaire connecté
-            if(demande.ipnUtilisateur === currentUser.ipn || 
-               demande.nomUtilisateur === currentUser.nom) {
-                demandes.push({
-                    firebaseKey: key,
-                    ...demande
+            if(demande.ipnUtilisateur === currentUser.ipn || demande.nomUtilisateur === currentUser.nom) {
+                demandes.push({ 
+                    firebaseKey: key, 
+                    ...demande,
+                    // S'assurer que tous les champs de commentaires existent
+                    commentaireRefus: demande.commentaireRefus || "",
+                    commentaireModification: demande.commentaireModification || "",
+                    commentaireMagasinier: demande.commentaireMagasinier || "",
+                    commentaireValidation: demande.commentaireValidation || ""
                 });
             }
         }
-        
-        // Trier par date décroissante (plus récent d'abord)
         demandes.sort((a,b) => (b.date + b.heure).localeCompare(a.date + a.heure));
-        
         afficherDemandes();
-        
     } catch(error) {
         console.error("Erreur chargement demandes:", error);
     }
 }
 
-// ========== AFFICHER LES DEMANDES ==========
 function afficherDemandes() {
     const tbody = document.getElementById("demandesList");
     if(!tbody) return;
-    
     tbody.innerHTML = "";
-    
     let demandesFiltrees = demandes;
-    
-    // Filtrer les demandes masquées si nécessaire
     if(!afficherMasques) {
         demandesFiltrees = demandes.filter(d => !demandesMasquees.has(d.firebaseKey));
     }
-    
     if(demandesFiltrees.length === 0) {
         tbody.innerHTML = "<tr><td colspan='9' style='text-align:center;'>Aucune demande trouvée</td></tr>";
         return;
@@ -1114,31 +1028,26 @@ function afficherDemandes() {
         let statusClass = "";
         let statusText = "";
         
-        switch(demande.statut) {
-            case "valide":
-                statusClass = "status-valide";
-                statusText = "✅ Validée";
-                break;
-            case "refuse":
-                statusClass = "status-refuse";
-                statusText = "❌ Refusée";
-                break;
-            default:
-                statusClass = "status-en-attente";
-                statusText = "⏳ En attente";
+        // Déterminer le statut avec icône appropriée
+        if(demande.commentaireModification && demande.commentaireModification.trim() !== "" && demande.statut === "valide") {
+            statusClass = "status-modifie";
+            statusText = "🔄 Modifiée";
+        } else if(demande.statut === "valide") {
+            statusClass = "status-valide";
+            statusText = "✅ Validée";
+        } else if(demande.statut === "refuse") {
+            statusClass = "status-refuse";
+            statusText = "❌ Refusée";
+        } else {
+            statusClass = "status-en-attente";
+            statusText = "⏳ En attente";
         }
         
         const estMasquee = demandesMasquees.has(demande.firebaseKey);
         
-        // Affichage du commentaire de refus
-        let commentaireHtml = "-";
-        if(demande.statut === "refuse" && demande.commentaireRefus) {
-            commentaireHtml = `<span class="commentaire-text">💬 ${escapeHtml(demande.commentaireRefus)}</span>`;
-        } else if(demande.statut === "refuse") {
-            commentaireHtml = `<span class="commentaire-text" style="color:#999;">Aucun commentaire</span>`;
-        }
+        // Utiliser la nouvelle fonction pour afficher tous les commentaires
+        const commentaireHtml = afficherTousLesCommentaires(demande);
         
-        // Ajouter le bouton d'action uniquement pour les demandes validées
         let actionButton = "";
         if(demande.statut === "valide") {
             if(estMasquee) {
@@ -1151,7 +1060,6 @@ function afficherDemandes() {
         }
         
         const row = document.createElement("tr");
-        
         row.innerHTML = `
             <td>${demande.date || ""}</td>
             <td>${demande.heure || ""}</td>
@@ -1163,12 +1071,10 @@ function afficherDemandes() {
             <td class="commentaire-cell">${commentaireHtml}</td>
             <td style="text-align:center;">${actionButton}</td>
         `;
-        
         tbody.appendChild(row);
     });
 }
 
-// Fonction utilitaire pour échapper les caractères HTML
 function escapeHtml(text) {
     if(!text) return "";
     const div = document.createElement('div');
@@ -1176,22 +1082,17 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-// ========== AFFICHER LES PRODUITS ==========
 function afficherProduits(liste) {
     container.innerHTML = "";
-    
     if(liste.length === 0) {
         container.innerHTML = "<div style='text-align:center;padding:50px;'>Aucun produit trouvé</div>";
         return;
     }
-    
     liste.forEach(produit => {
         const stockInfo = getStockInfo(produit);
         const nombreDemandes = produitsDemandes[produit.reference] || 0;
-        
         const card = document.createElement("div");
         card.className = "card";
-        
         card.innerHTML = `
             <div class="card-image-container" onclick="openImageModal('${produit.image}')">
                 <img src="${produit.image}" onerror="this.src='https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?q=80&w=1200&auto=format&fit=crop'">
@@ -1201,38 +1102,25 @@ function afficherProduits(liste) {
                     Référence : ${produit.reference}
                     ${nombreDemandes > 0 ? `<span style="color:#ff9800; margin-left:8px;">📊 ${nombreDemandes} demandé(s)</span>` : ''}
                 </div>
-                <div class="designation">
-                    ${produit.designation}
-                </div>
-                <div class="stock ${stockInfo.class}">
-                    ${stockInfo.text}
-                </div>
-                <button class="btn" ${!stockInfo.disponible ? 'disabled style="opacity:0.5;"' : ''}>
-                    ${!stockInfo.disponible ? 'Rupture' : 'Demander'}
-                </button>
+                <div class="designation">${produit.designation}</div>
+                <div class="stock ${stockInfo.class}">${stockInfo.text}</div>
+                <button class="btn" ${!stockInfo.disponible ? 'disabled style="opacity:0.5;"' : ''}>${!stockInfo.disponible ? 'Rupture' : 'Demander'}</button>
             </div>
         `;
-        
         const btn = card.querySelector(".btn");
         if(stockInfo.disponible) {
-            btn.addEventListener("click", () => {
-                openModal(produit);
-            });
+            btn.addEventListener("click", () => openModal(produit));
         }
-        
         container.appendChild(card);
     });
 }
 
-// ========== MODAL DEMANDE ==========
 function openModal(produit) {
     produitSelectionne = produit;
     const stockInfo = getStockInfo(produit);
     document.getElementById("modal").style.display = "flex";
     document.getElementById("modalRef").innerText = produit.reference;
     document.getElementById("modalName").innerText = produit.designation;
-    
-    // Afficher seulement l'état du stock sans la quantité
     const stockHtml = `
         <div style="display:inline-block; padding:8px 16px; border-radius:20px; background:${stockInfo.class === 'stock-disponible' ? '#d4edda' : (stockInfo.class === 'stock-faible' ? '#fff3cd' : '#f8d7da')}; color:${stockInfo.class === 'stock-disponible' ? '#155724' : (stockInfo.class === 'stock-faible' ? '#856404' : '#721c24')}; font-weight:bold;">
             📊 État : ${stockInfo.text}
@@ -1247,28 +1135,20 @@ function closeModal() {
     produitSelectionne = null;
 }
 
-// ========== VALIDER LA DEMANDE - ENREGISTREMENT DANS DEMANDES ==========
 async function validerDemande() {
     const qty = parseInt(document.getElementById("quantityInput").value);
-    
     if(!qty || qty <= 0) {
         alert("Veuillez entrer une quantité valide.");
         return;
     }
-    
-    // Vérifier le stock disponible (stock réel - demandes en attente)
     const stockDisponible = getStockDisponible(produitSelectionne);
-    
     if(qty > stockDisponible) {
         alert("❌ Désolé, la quantité demandée dépasse la disponibilité actuelle.");
         return;
     }
-    
     const now = new Date();
     const dateStr = now.toISOString().split('T')[0];
     const heureStr = now.toTimeString().split(' ')[0];
-    
-    // Créer la demande dans la table "demandes"
     const demande = {
         typeOperation: "DEMANDE",
         referenceProduit: produitSelectionne.reference,
@@ -1282,151 +1162,102 @@ async function validerDemande() {
         nomMagasinier: "",
         ipnMagasinier: "",
         statut: "en_attente",
-        commentaireRefus: ""
+        commentaireRefus: "",
+        commentaireModification: "",
+        commentaireMagasinier: "",
+        commentaireValidation: ""
     };
-    
     try {
-        // Enregistrer la demande
-        await fetch(`${BASE}/demandes.json`, {
-            method: "POST",
-            body: JSON.stringify(demande)
-        });
-        
+        await fetch(`${BASE}/demandes.json`, { method: "POST", body: JSON.stringify(demande) });
         alert(`✅ Demande envoyée : ${qty} ${qty > 1 ? 'pièces' : 'pièce'} demandée(s) pour ${produitSelectionne.designation}`);
-        
         closeModal();
-        
-        // Recharger les demandes et les compteurs
         await loadDemandes();
         await compterDemandesEnAttente();
-        
     } catch(error) {
         console.error("Erreur:", error);
         alert("Erreur lors de l'enregistrement de la demande");
     }
 }
 
-// ========== AUTHENTIFICATION AVEC REDIRECTION POUR MAGASINIER ==========
 async function connexion() {
     const identifiant = document.getElementById("identifiantInput").value.trim();
-    
     if(identifiant === "") {
         alert("Veuillez entrer votre IPN ou votre nom.");
         return;
     }
-    
     try {
         const loginBtn = document.querySelector('.login-btn');
         const originalText = loginBtn.textContent;
         loginBtn.textContent = "⏳ Vérification...";
         loginBtn.disabled = true;
-        
-        // Récupérer tous les utilisateurs
         const response = await fetch(`${BASE}/utilisateurs.json`);
         const data = await response.json();
-        
         let foundUser = null;
         let userKey = null;
-        
-        // Parcourir les utilisateurs pour trouver une correspondance
         for(let key in data) {
             const user = data[key];
-            
-            // Comparaison avec l'IPN
             if(user.ipn && user.ipn === identifiant) {
                 foundUser = user;
                 userKey = key;
-                console.log("✅ Utilisateur trouvé par IPN:", user.ipn, "Nom:", user.nom, "UET:", user.uet);
                 break;
             }
-            // Comparaison avec le nom (insensible à la casse)
             else if(user.nom && user.nom.toLowerCase() === identifiant.toLowerCase()) {
                 foundUser = user;
                 userKey = key;
-                console.log("✅ Utilisateur trouvé par nom:", user.nom, "IPN:", user.ipn, "UET:", user.uet);
                 break;
             }
         }
-        
         loginBtn.textContent = originalText;
         loginBtn.disabled = false;
-        
         if(foundUser) {
-            // Vérifier si l'utilisateur est un MAGASINIER
             if(foundUser.uet === "MAGASINIER") {
-                // Rediriger vers la page du magasinier
                 alert("🔄 Redirection vers l'interface Magasinier...");
                 window.location.href = MAGASINIER_REDIRECT_URL;
                 return;
             }
             else {
-                // Tous les autres utilisateurs (y compris LOGISTIQUE et autres) restent sur cette page
                 currentUser = {
                     id: userKey,
                     ipn: foundUser.ipn || "Non spécifié",
                     nom: foundUser.nom || "Non spécifié",
                     uet: foundUser.uet || "Non spécifié"
                 };
-                
-                // Afficher la page principale
                 document.getElementById("loginContainer").style.display = "none";
                 document.getElementById("mainPage").classList.remove("hidden");
-                
-                document.getElementById("userInfo").innerHTML = 
-                    "👤 " + currentUser.nom + " | IPN: " + currentUser.ipn + " | UET: " + currentUser.uet;
-                
+                document.getElementById("userInfo").innerHTML = "👤 " + currentUser.nom + " | IPN: " + currentUser.ipn + " | UET: " + currentUser.uet;
                 loadHiddenPreferences();
                 await loadProductsFromFirebase();
-                
-                console.log("✅ Connexion réussie pour:", currentUser.nom);
             }
         }
         else {
             alert("❌ Utilisateur non trouvé. Vérifiez votre IPN ou votre nom.");
-            console.log("Recherche échouée pour:", identifiant);
-            console.log("Utilisateurs disponibles:", data);
         }
-        
     } catch(error) {
         console.error("❌ Erreur authentification:", error);
         alert("Erreur de connexion au serveur. Vérifiez votre connexion internet.");
-        
         const loginBtn = document.querySelector('.login-btn');
         loginBtn.textContent = "Entrer";
         loginBtn.disabled = false;
     }
 }
 
-// ========== RECHERCHE ==========
 const searchInput = document.getElementById("searchInput");
 if(searchInput){
-    searchInput.addEventListener("input", function() {
-        appliquerTriEtFiltrage();
-    });
+    searchInput.addEventListener("input", () => appliquerTriEtFiltrage());
 }
 
-// Permettre la connexion avec la touche Entrée
 const identifiantInput = document.getElementById("identifiantInput");
 if(identifiantInput) {
-    identifiantInput.addEventListener("keypress", function(event) {
-        if(event.key === "Enter") {
-            connexion();
-        }
+    identifiantInput.addEventListener("keypress", (event) => {
+        if(event.key === "Enter") connexion();
     });
 }
 
-// Fermer l'image modale avec la touche Echap
-document.addEventListener("keydown", function(event) {
-    if(event.key === "Escape") {
-        closeImageModal();
-    }
+document.addEventListener("keydown", (event) => {
+    if(event.key === "Escape") closeImageModal();
 });
 
-// ========== INITIALISATION ==========
-console.log("🚀 Page prête - Interface Réceptionnaire");
-console.log("🔐 Connexion : entrez votre IPN ou votre nom complet");
-
+console.log("🚀 Page prête - Interface Réceptionnaire avec lecture de tous les commentaires");
 </script>
-
 </body>
 </html>
