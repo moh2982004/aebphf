@@ -263,10 +263,26 @@ header h1{
     transform:translateY(-5px);
 }
 
-.card img{
+.card-image-container{
     width:100%;
-    height:180px;
+    height:200px;
+    overflow:hidden;
+    cursor:pointer;
+    background:#f5f5f5;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.card-image-container img{
+    width:100%;
+    height:100%;
     object-fit:cover;
+    transition:transform 0.3s ease;
+}
+
+.card-image-container:hover img{
+    transform:scale(1.05);
 }
 
 .card-content{
@@ -297,17 +313,17 @@ header h1{
     font-size:13px;
 }
 
-.stock-ok{
+.stock-disponible{
     background:#d4edda;
     color:#155724;
 }
 
-.stock-low{
+.stock-faible{
     background:#fff3cd;
     color:#856404;
 }
 
-.stock-out{
+.stock-rupture{
     background:#f8d7da;
     color:#721c24;
 }
@@ -347,7 +363,7 @@ header h1{
     background:#b02a37;
 }
 
-/* MODAL RESPONSIVE */
+/* MODAL DEMANDE */
 .modal{
     position:fixed;
     top:0;
@@ -431,6 +447,77 @@ header h1{
     background:#b02a37;
 }
 
+/* MODAL IMAGE */
+.image-modal{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.95);
+    display:none;
+    justify-content:center;
+    align-items:center;
+    z-index:2000;
+    cursor:pointer;
+}
+
+.image-modal-content{
+    max-width:90%;
+    max-height:90%;
+    position:relative;
+    animation:zoomIn 0.3s ease;
+}
+
+@keyframes zoomIn{
+    from{
+        transform:scale(0.8);
+        opacity:0;
+    }
+    to{
+        transform:scale(1);
+        opacity:1;
+    }
+}
+
+.image-modal-content img{
+    max-width:100%;
+    max-height:90vh;
+    object-fit:contain;
+    border-radius:10px;
+    box-shadow:0 10px 40px rgba(0,0,0,0.5);
+}
+
+.image-modal-close{
+    position:absolute;
+    top:-50px;
+    right:0;
+    background:#ff9800;
+    color:white;
+    border:none;
+    padding:12px 24px;
+    border-radius:10px;
+    cursor:pointer;
+    font-size:16px;
+    font-weight:bold;
+    transition:0.3s;
+    z-index:2001;
+}
+
+.image-modal-close:hover{
+    background:#e68900;
+    transform:scale(1.05);
+}
+
+@media(max-width:768px){
+    .image-modal-close{
+        top:-60px;
+        right:0;
+        padding:8px 16px;
+        font-size:14px;
+    }
+}
+
 .hidden{
     display:none;
 }
@@ -506,8 +593,8 @@ header h1{
         gap:15px;
     }
     
-    .card img{
-        height:150px;
+    .card-image-container{
+        height:180px;
     }
     
     .designation{
@@ -552,6 +639,10 @@ header h1{
     .login-box h1{
         font-size:1.5rem;
     }
+    
+    .card-image-container{
+        height:160px;
+    }
 }
 
 /* Styles pour les écrans très larges */
@@ -563,6 +654,10 @@ header h1{
     body{
         max-width:1400px;
         margin:0 auto;
+    }
+    
+    .card-image-container{
+        height:220px;
     }
 }
 
@@ -590,7 +685,7 @@ header h1{
 
     <div class="login-box">
 
-        <h1>🏬 Magasin Store</h1>
+        <h1>📦 Magasin Store</h1>
 
         <p>Identification</p>
 
@@ -615,7 +710,6 @@ header h1{
 
 <header>
 
-
    <div>
 
 
@@ -630,7 +724,7 @@ header h1{
 
 
 
-        <h1>🏬 AEB Magasin Store</h1>
+        <h1>🏪 AEB Magasin Store</h1>
 
         <div class="user-info" id="userInfo"></div>
 
@@ -694,8 +788,7 @@ header h1{
 
 </div>
 
-<!-- MODAL -->
-
+<!-- MODAL DEMANDE -->
 <div class="modal" id="modal">
 
     <div class="modal-content">
@@ -710,9 +803,7 @@ header h1{
             <span id="modalName"></span>
         </p>
 
-        <p><strong>Stock disponible :</strong>
-            <span id="modalStock"></span>
-        </p>
+        <div class="modal-stock-info" id="modalStockInfo" style="margin-bottom:15px;"></div>
 
         <input type="number"
         id="quantityInput"
@@ -736,6 +827,14 @@ header h1{
 
 </div>
 
+<!-- MODAL IMAGE -->
+<div class="image-modal" id="imageModal" onclick="closeImageModal()">
+    <div class="image-modal-content" onclick="event.stopPropagation()">
+        <button class="image-modal-close" onclick="closeImageModal()">✕ Fermer</button>
+        <img id="modalImage" src="" alt="Image agrandie">
+    </div>
+</div>
+
 <script>
 
 // Configuration Firebase
@@ -749,11 +848,49 @@ let produitsFirebaseKeys = {};
 let currentUser = null;
 let produitSelectionne = null;
 let demandes = [];
-let produitsDemandes = {}; // Pour compter les demandes par produit
+let demandesEnAttenteParProduit = {}; // Stocke les quantités des demandes en attente par produit
+let produitsDemandes = {}; // Pour compter les demandes par produit (historique)
 let demandesMasquees = new Set(); // Stocke les IDs des demandes masquées
 let afficherMasques = false; // État d'affichage des demandes masquées
 
 const container = document.getElementById("productsContainer");
+
+// Fonction pour calculer le stock disponible (stock réel - demandes en attente)
+function getStockDisponible(produit) {
+    const stockReel = produit.stockActuel || 0;
+    const demandesAttente = demandesEnAttenteParProduit[produit.reference] || 0;
+    return stockReel - demandesAttente;
+}
+
+// Fonction pour obtenir le texte et la classe CSS du stock selon les règles (basé sur stock disponible)
+function getStockInfo(produit) {
+    const stockDisponible = getStockDisponible(produit);
+    const stockInitial = produit.stockInitial || 0;
+    
+    if(stockDisponible <= 0) {
+        return { text: "❌ Rupture de stock", class: "stock-rupture", disponible: false, stockReel: stockDisponible };
+    } else if(stockDisponible < stockInitial) {
+        return { text: "⚠️ Stock faible", class: "stock-faible", disponible: true, stockReel: stockDisponible };
+    } else {
+        return { text: "✅ Disponible", class: "stock-disponible", disponible: true, stockReel: stockDisponible };
+    }
+}
+
+// Fonction pour ouvrir l'image en grand
+function openImageModal(imageUrl) {
+    const modal = document.getElementById("imageModal");
+    const modalImg = document.getElementById("modalImage");
+    modal.style.display = "flex";
+    modalImg.src = imageUrl;
+    document.body.style.overflow = "hidden";
+}
+
+// Fonction pour fermer l'image modale
+function closeImageModal() {
+    const modal = document.getElementById("imageModal");
+    modal.style.display = "none";
+    document.body.style.overflow = "auto";
+}
 
 // Charger les préférences de masquage depuis localStorage
 function loadHiddenPreferences() {
@@ -794,22 +931,33 @@ function showRequest(requestId) {
     afficherDemandes();
 }
 
-// Compter les demandes par produit
-async function compterDemandesParProduit() {
+// Compter les demandes en attente par produit (pour calculer le stock disponible)
+async function compterDemandesEnAttente() {
     if(!currentUser) return;
     
     try {
         const response = await fetch(`${BASE}/demandes.json`);
         const data = await response.json();
         
+        demandesEnAttenteParProduit = {};
         produitsDemandes = {};
         
         for(let key in data) {
             const demande = data[key];
-            // Compter toutes les demandes de ce réceptionnaire
+            
+            // Compter les demandes en attente pour le stock disponible (toutes les demandes en attente, pas seulement celles de l'utilisateur)
+            if(demande.statut === "en_attente") {
+                const ref = demande.referenceProduit;
+                if(!demandesEnAttenteParProduit[ref]) {
+                    demandesEnAttenteParProduit[ref] = 0;
+                }
+                demandesEnAttenteParProduit[ref] += demande.quantite || 0;
+            }
+            
+            // Compter toutes les demandes de ce réceptionnaire pour l'affichage
             if((demande.ipnUtilisateur === currentUser.ipn || 
                demande.nomUtilisateur === currentUser.nom) &&
-               demande.statut !== "refuse") { // Ne compter que les demandes validées ou en attente
+               demande.statut !== "refuse") {
                 
                 const ref = demande.referenceProduit;
                 if(!produitsDemandes[ref]) {
@@ -836,8 +984,10 @@ function trierParPopularite(produitsList) {
             return demandesB - demandesA; // Plus demandé en premier
         }
         
-        // En cas d'égalité, trier par stock (plus petit stock en premier)
-        return a.stockActuel - b.stockActuel;
+        // En cas d'égalité, trier par stock disponible (plus petit stock en premier)
+        const stockA = getStockDisponible(a);
+        const stockB = getStockDisponible(b);
+        return stockA - stockB;
     });
 }
 
@@ -872,7 +1022,7 @@ function deconnexion() {
     document.getElementById("identifiantInput").value = "";
     // Vider le conteneur des produits
     container.innerHTML = "";
-    alert("🔓 Vous avez été déconnecté avec succès.");
+    alert("👋 Vous avez été déconnecté avec succès.");
 }
 
 // ========== CHARGER LES PRODUITS DEPUIS FIREBASE ==========
@@ -902,7 +1052,7 @@ async function loadProductsFromFirebase() {
         }
         
         await loadDemandes();
-        await compterDemandesParProduit();
+        await compterDemandesEnAttente();
         
     } catch(error) {
         console.error("Erreur chargement produits:", error);
@@ -956,7 +1106,7 @@ function afficherDemandes() {
     }
     
     if(demandesFiltrees.length === 0) {
-        tbody.innerHTML = "<tr><td colspan='9' style='text-align:center;'>Aucune demande trouvée</td><tr>";
+        tbody.innerHTML = "<tr><td colspan='9' style='text-align:center;'>Aucune demande trouvée</td></tr>";
         return;
     }
     
@@ -980,10 +1130,10 @@ function afficherDemandes() {
         
         const estMasquee = demandesMasquees.has(demande.firebaseKey);
         
-        // Affichage du commentaire de refus (utilisation de commentaireRefus)
+        // Affichage du commentaire de refus
         let commentaireHtml = "-";
         if(demande.statut === "refuse" && demande.commentaireRefus) {
-            commentaireHtml = `<span class="commentaire-text">📝 ${escapeHtml(demande.commentaireRefus)}</span>`;
+            commentaireHtml = `<span class="commentaire-text">💬 ${escapeHtml(demande.commentaireRefus)}</span>`;
         } else if(demande.statut === "refuse") {
             commentaireHtml = `<span class="commentaire-text" style="color:#999;">Aucun commentaire</span>`;
         }
@@ -992,7 +1142,7 @@ function afficherDemandes() {
         let actionButton = "";
         if(demande.statut === "valide") {
             if(estMasquee) {
-                actionButton = `<button class="show-request-btn" onclick="showRequest('${demande.firebaseKey}')">🔄 Afficher</button>`;
+                actionButton = `<button class="show-request-btn" onclick="showRequest('${demande.firebaseKey}')">👁️ Afficher</button>`;
             } else {
                 actionButton = `<button class="hide-request-btn" onclick="hideRequest('${demande.firebaseKey}')">🙈 Masquer</button>`;
             }
@@ -1036,41 +1186,35 @@ function afficherProduits(liste) {
     }
     
     liste.forEach(produit => {
-        let stockClass = "";
-        if(produit.stockActuel > 10) {
-            stockClass = "stock-ok";
-        } else if(produit.stockActuel > 0) {
-            stockClass = "stock-low";
-        } else {
-            stockClass = "stock-out";
-        }
-        
+        const stockInfo = getStockInfo(produit);
         const nombreDemandes = produitsDemandes[produit.reference] || 0;
         
         const card = document.createElement("div");
         card.className = "card";
         
         card.innerHTML = `
-            <img src="${produit.image}" onerror="this.src='https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?q=80&w=1200&auto=format&fit=crop'">
+            <div class="card-image-container" onclick="openImageModal('${produit.image}')">
+                <img src="${produit.image}" onerror="this.src='https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?q=80&w=1200&auto=format&fit=crop'">
+            </div>
             <div class="card-content">
                 <div class="reference">
                     Référence : ${produit.reference}
-                    ${nombreDemandes > 0 ? `<span style="color:#ff9800; margin-left:8px;">🔥 ${nombreDemandes} demandé(s)</span>` : ''}
+                    ${nombreDemandes > 0 ? `<span style="color:#ff9800; margin-left:8px;">📊 ${nombreDemandes} demandé(s)</span>` : ''}
                 </div>
                 <div class="designation">
                     ${produit.designation}
                 </div>
-                <div class="stock ${stockClass}">
-                    Stock : ${produit.stockActuel}
+                <div class="stock ${stockInfo.class}">
+                    ${stockInfo.text}
                 </div>
-                <button class="btn" ${produit.stockActuel === 0 ? 'disabled style="opacity:0.5;"' : ''}>
-                    ${produit.stockActuel === 0 ? 'Rupture' : 'Demander'}
+                <button class="btn" ${!stockInfo.disponible ? 'disabled style="opacity:0.5;"' : ''}>
+                    ${!stockInfo.disponible ? 'Rupture' : 'Demander'}
                 </button>
             </div>
         `;
         
         const btn = card.querySelector(".btn");
-        if(produit.stockActuel > 0) {
+        if(stockInfo.disponible) {
             btn.addEventListener("click", () => {
                 openModal(produit);
             });
@@ -1080,13 +1224,21 @@ function afficherProduits(liste) {
     });
 }
 
-// ========== MODAL ==========
+// ========== MODAL DEMANDE ==========
 function openModal(produit) {
     produitSelectionne = produit;
+    const stockInfo = getStockInfo(produit);
     document.getElementById("modal").style.display = "flex";
     document.getElementById("modalRef").innerText = produit.reference;
     document.getElementById("modalName").innerText = produit.designation;
-    document.getElementById("modalStock").innerText = produit.stockActuel;
+    
+    // Afficher seulement l'état du stock sans la quantité
+    const stockHtml = `
+        <div style="display:inline-block; padding:8px 16px; border-radius:20px; background:${stockInfo.class === 'stock-disponible' ? '#d4edda' : (stockInfo.class === 'stock-faible' ? '#fff3cd' : '#f8d7da')}; color:${stockInfo.class === 'stock-disponible' ? '#155724' : (stockInfo.class === 'stock-faible' ? '#856404' : '#721c24')}; font-weight:bold;">
+            📊 État : ${stockInfo.text}
+        </div>
+    `;
+    document.getElementById("modalStockInfo").innerHTML = stockHtml;
     document.getElementById("quantityInput").value = "";
 }
 
@@ -1104,8 +1256,11 @@ async function validerDemande() {
         return;
     }
     
-    if(qty > produitSelectionne.stockActuel) {
-        alert("Quantité insuffisante en stock.");
+    // Vérifier le stock disponible (stock réel - demandes en attente)
+    const stockDisponible = getStockDisponible(produitSelectionne);
+    
+    if(qty > stockDisponible) {
+        alert("❌ Désolé, la quantité demandée dépasse la disponibilité actuelle.");
         return;
     }
     
@@ -1127,7 +1282,7 @@ async function validerDemande() {
         nomMagasinier: "",
         ipnMagasinier: "",
         statut: "en_attente",
-        commentaireRefus: "" // Champ pour le commentaire de refus
+        commentaireRefus: ""
     };
     
     try {
@@ -1143,7 +1298,7 @@ async function validerDemande() {
         
         // Recharger les demandes et les compteurs
         await loadDemandes();
-        await compterDemandesParProduit();
+        await compterDemandesEnAttente();
         
     } catch(error) {
         console.error("Erreur:", error);
@@ -1163,7 +1318,7 @@ async function connexion() {
     try {
         const loginBtn = document.querySelector('.login-btn');
         const originalText = loginBtn.textContent;
-        loginBtn.textContent = "🔄 Vérification...";
+        loginBtn.textContent = "⏳ Vérification...";
         loginBtn.disabled = true;
         
         // Récupérer tous les utilisateurs
@@ -1200,7 +1355,7 @@ async function connexion() {
             // Vérifier si l'utilisateur est un MAGASINIER
             if(foundUser.uet === "MAGASINIER") {
                 // Rediriger vers la page du magasinier
-                alert("🔐 Redirection vers l'interface Magasinier...");
+                alert("🔄 Redirection vers l'interface Magasinier...");
                 window.location.href = MAGASINIER_REDIRECT_URL;
                 return;
             }
@@ -1260,9 +1415,16 @@ if(identifiantInput) {
     });
 }
 
+// Fermer l'image modale avec la touche Echap
+document.addEventListener("keydown", function(event) {
+    if(event.key === "Escape") {
+        closeImageModal();
+    }
+});
+
 // ========== INITIALISATION ==========
-console.log("📦 Page prête - Interface Réceptionnaire");
-console.log("ℹ️ Connexion : entrez votre IPN ou votre nom complet");
+console.log("🚀 Page prête - Interface Réceptionnaire");
+console.log("🔐 Connexion : entrez votre IPN ou votre nom complet");
 
 </script>
 
