@@ -358,7 +358,7 @@ hr { margin: 15px 0; }
     padding: 10px 12px;
 }
 .demandes-table {
-    min-width: 750px;
+    min-width: 850px;
 }
 .demandes-table th,
 .demandes-table td {
@@ -378,6 +378,21 @@ hr { margin: 15px 0; }
     opacity: 0.5;
     background: #f5f5f5;
     text-decoration: line-through;
+}
+/* Nouveau style pour stock insuffisant */
+.stock-warning {
+    background-color: #ffebee;
+    color: #c62828;
+    font-weight: bold;
+    border-radius: 4px;
+    padding: 2px 6px;
+}
+.stock-ok {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    font-weight: bold;
+    border-radius: 4px;
+    padding: 2px 6px;
 }
 
 /* STATUTS DES DEMANDES */
@@ -540,6 +555,19 @@ hr { margin: 15px 0; }
     font-size: 11px;
 }
 
+/* MODAL CHANGEMENT MOT DE PASSE */
+.password-modal-content {
+    max-width: 400px;
+}
+.password-strength {
+    font-size: 12px;
+    margin-top: -10px;
+    margin-bottom: 15px;
+}
+.strength-weak { color: #dc2626; }
+.strength-medium { color: #f59e0b; }
+.strength-strong { color: #10b981; }
+
 /* STYLES POUR LA MODIFICATION PRODUIT */
 .search-produit-section {
     background: #e3f2fd;
@@ -683,13 +711,14 @@ hr { margin: 15px 0; }
 <!-- ÉCRAN DE VERROUILLAGE -->
 <div id="lockScreen" class="lock-screen">
     <div class="lock-card">
-        <h1>🏬 AEB MAGASIN</h1>
-        <p>🔐 Accès réservé aux <strong style="color:#ef6c00;">MAGASINIERS</strong> uniquement</p>
+        <h1>🔐 AEB MAGASIN</h1>
+        <p>👨‍💼 Accès réservé aux <strong style="color:#ef6c00;">MAGASINIERS</strong> uniquement</p>
         <input type="text" id="loginIdentifier" class="lock-input" placeholder="IPN ou Nom complet">
-        <button class="btn-lock" onclick="attemptLogin()">▶ Se connecter</button>
-        <div id="lockError" class="error-msg">❌ Accès refusé. Vous devez être magasinier.</div>
+        <input type="password" id="loginPassword" class="lock-input" placeholder="Mot de passe">
+        <button class="btn-lock" onclick="attemptLogin()">🔓 Se connecter</button>
+        <div id="lockError" class="error-msg">❌ Accès refusé.</div>
         <div class="info-msg">
-            ⚠️ Seuls les utilisateurs avec UET = "MAGASINIER" peuvent accéder au système.
+            🔑 Seuls les utilisateurs avec UET = "MAGASINIER" peuvent accéder au système.
         </div>
     </div>
 </div>
@@ -713,30 +742,30 @@ hr { margin: 15px 0; }
             </div>
 
 
-<h2>🏬 AEB MAGASIN</h2>
+
+<h2>📦 AEB MAGASIN</h2>
 <p style="margin:0; font-size:12px; color:#475569;">Interface réservée aux magasiniers</p>
 </div>
-
 <div class="user-panel">
     <span id="sessionUserName" class="user-badge">👤 En attente</span>
-    <span id="sessionRoleBadge" class="user-badge">🏬 MAGASINIER</span>
+    <span id="sessionRoleBadge" class="user-badge">🔑 MAGASINIER</span>
+    <button class="btn purple" onclick="openChangePasswordModal()" style="padding:4px 12px;">🔐 Changer mot de passe</button>
     <button class="btn silver" onclick="logoutAndLock()" style="padding:4px 12px;">🚪 Déconnexion</button>
 </div>
-
 </header>
 
 <!-- Boutons d'action responsives -->
 <div class="buttons-container">
-    <button class="btn green" onclick="openModal('inModal')">➕ Entrée</button>
-    <button class="btn red" onclick="openModal('outModal');loadReceptionnairesList()">➖ Sortie</button>
-    <button class="btn blue" onclick="openModal('productsModal');loadProducts()">📦 Catalogue</button>
-    <button class="btn dark" onclick="openModal('operationsModal');loadOperationsWithFilters()">📊 Historique</button>
+    <button class="btn green" onclick="openModal('inModal')">📥 Entrée</button>
+    <button class="btn red" onclick="openModal('outModal');loadReceptionnairesList()">📤 Sortie</button>
+    <button class="btn blue" onclick="openModal('productsModal');loadProducts()">📋 Catalogue</button>
+    <button class="btn dark" onclick="openModal('operationsModal');loadOperationsWithFilters()">📜 Historique</button>
     <button class="btn purple" onclick="openModal('newProductModal')">🆕 Produit</button>
     <button class="btn warning" onclick="openModal('editProductModal')">✏️ Modifier Produit</button>
-    <button class="btn orange" onclick="openModal('magasiniersModal');loadMagasiniersList()">🏬 Magasiniers</button>
-    <button class="btn teal" onclick="openModal('receptionnairesModal');loadReceptionnairesListComplete()">📦 Réceptionnaires</button>
-    <button class="btn silver" onclick="openModal('inventoryModal');loadInventoryProducts()">📋 Inventaire</button>
-    <button class="btn dark" onclick="openTicketModal()">🏷️ Imprimer Ticket</button>
+    <button class="btn orange" onclick="openModal('magasiniersModal');loadMagasiniersList()">👥 Magasiniers</button>
+    <button class="btn teal" onclick="openModal('receptionnairesModal');loadReceptionnairesListComplete()">📋 Réceptionnaires</button>
+    <button class="btn silver" onclick="openModal('inventoryModal');loadInventoryProducts()">📊 Inventaire</button>
+    <button class="btn dark" onclick="openTicketModal()">🖨️ Imprimer Ticket</button>
 </div>
 
 <!-- TABLEAU DES DEMANDES AVEC FILTRES -->
@@ -746,13 +775,16 @@ hr { margin: 15px 0; }
     <!-- Filtre par réceptionnaire -->
     <div class="demandes-filters">
         <div class="filter-group-demande">
-            <label>🔍 Filtrer par réceptionnaire</label>
+            <label>👤 Filtrer par réceptionnaire</label>
             <select id="demandeFiltreReceptionnaire" onchange="appliquerFiltresDemandes()">
                 <option value="">Tous les réceptionnaires</option>
             </select>
         </div>
         <div class="filter-group-demande">
             <button class="btn cyan btn-small" onclick="reinitialiserFiltresDemandes()" style="margin-top:24px;">🔄 Réinitialiser</button>
+        </div>
+        <div class="filter-group-demande">
+            <button id="toggleTreatedBtn" class="btn orange btn-small" onclick="toggleShowTreated()" style="margin-top:24px;">🔒 Masquer les traitées</button>
         </div>
     </div>
     
@@ -766,8 +798,12 @@ hr { margin: 15px 0; }
                     <th>Désignation</th>
                     <th>Emplacement</th>
                     <th>Qté</th>
+                    
                     <th>Réceptionnaire</th>
                     <th>UET</th>
+
+                    <th>Stock actuel</th>
+                    <th>Total demandé</th>
                     <th>Statut</th>
                     <th>Actions</th>
                 </tr>
@@ -778,7 +814,7 @@ hr { margin: 15px 0; }
 </div>
 
 <!-- Tableau produits -->
-<h3>📋 État des stocks</h3>
+<h3>📊 État des stocks</h3>
 <div style="overflow-x:auto;">
     <table id="productsTable">
         <thead>
@@ -797,10 +833,34 @@ hr { margin: 15px 0; }
     </table>
 </div>
 
+<!-- MODAL CHANGEMENT MOT DE PASSE -->
+<div class="modal" id="changePasswordModal">
+    <div class="modal-content password-modal-content">
+        <h3>🔐 Changer mon mot de passe</h3>
+        <div class="form-group">
+            <label>📝 Ancien mot de passe</label>
+            <input type="password" id="oldPassword" placeholder="Entrez votre mot de passe actuel">
+        </div>
+        <div class="form-group">
+            <label>🆕 Nouveau mot de passe</label>
+            <input type="password" id="newPassword" placeholder="Nouveau mot de passe (min 6 caractères)" onkeyup="checkPasswordStrength()">
+            <div id="passwordStrength" class="password-strength"></div>
+        </div>
+        <div class="form-group">
+            <label>✅ Confirmer le mot de passe</label>
+            <input type="password" id="confirmPassword" placeholder="Confirmez le nouveau mot de passe">
+        </div>
+        <div style="display:flex; gap:10px; justify-content:center; margin-top:20px;">
+            <button class="btn green" onclick="changePassword()">💾 Enregistrer</button>
+            <button class="btn silver" onclick="closeModal('changePasswordModal')">❌ Annuler</button>
+        </div>
+    </div>
+</div>
+
 <!-- MODAL COMMENTAIRE POUR REFUS -->
 <div class="modal" id="commentModal">
     <div class="modal-content comment-modal-content">
-        <h3>💬 Motif du refus</h3>
+        <h3>📝 Motif du refus</h3>
         <label for="refusCommentaire">Veuillez indiquer la raison du refus :</label>
         <textarea id="refusCommentaire" rows="4" class="comment-textarea" placeholder="Ex: Stock insuffisant, produit non disponible, etc."></textarea>
         <div style="display:flex; gap:10px; justify-content:center; margin-top:20px;">
@@ -813,7 +873,7 @@ hr { margin: 15px 0; }
 <!-- MODAL INVENTAIRE AVEC RECHERCHE PAR RÉFÉRENCE -->
 <div class="modal" id="inventoryModal">
 <div class="modal-content">
-    <h3>📋 Mise à jour d'inventaire</h3>
+    <h3>📊 Mise à jour d'inventaire</h3>
     <p style="font-size:13px;">Saisissez la nouvelle quantité pour mettre à jour le stock. L'ancienne valeur sera sauvegardée automatiquement.</p>
     
     <div class="inventory-search-section">
@@ -824,17 +884,17 @@ hr { margin: 15px 0; }
             </div>
             <div class="inventory-search-actions">
                 <button class="btn cyan" onclick="searchProductForInventory()">🔍 Rechercher</button>
-                <button class="btn silver" onclick="clearInventorySearch()">🗑️ Effacer</button>
+                <button class="btn silver" onclick="clearInventorySearch()">🧹 Effacer</button>
             </div>
         </div>
         <div id="inventoryFoundCard" class="inventory-found-card">
             <p><strong>✅ Produit trouvé :</strong></p>
-            <p>📦 Référence : <strong id="foundInventoryRef"></strong><br>
-            🏷️ Désignation : <span id="foundInventoryDesignation"></span><br>
+            <p>🏷️ Référence : <strong id="foundInventoryRef"></strong><br>
+            📦 Désignation : <span id="foundInventoryDesignation"></span><br>
             📍 Emplacement : <span id="foundInventoryEmplacement"></span><br>
             📊 Stock actuel : <span class="current-stock-info"><span id="foundInventoryCurrentStock">0</span></span></p>
             <div class="form-group">
-                <label>✏️ Nouveau stock :</label>
+                <label>🔄 Nouveau stock :</label>
                 <input type="number" id="foundInventoryNewStock" placeholder="Nouvelle quantité">
             </div>
             <button class="btn green" onclick="updateFoundInventoryProduct()">✅ Mettre à jour ce produit</button>
@@ -845,17 +905,17 @@ hr { margin: 15px 0; }
     <h4>📋 Tous les produits</h4>
     <div style="overflow-x:auto; max-height: 50vh;">
         <table id="inventoryTable" style="min-width:400px;">
-            <thead><tr><th>Réf</th><th>Désignation</th><th>Stock actuel</th><th>Nouveau stock</th><th>Action</th></tr></thead>
+            <thead><tr><th>Réf</th><th>Désignation</th><th>Stock actuel</th><th>Nouveau stock</th><th>Action</th><tr></thead>
             <tbody id="inventoryList"></tbody>
-          </table>
+        </table>
     </div>
     <button class="btn dark" onclick="closeModal('inventoryModal')">Fermer</button>
 </div></div>
 
 <!-- MODAL ENTRÉE -->
 <div class="modal" id="inModal">
-<div class="modal-content"><h3>➕ ENTRÉE PRODUIT</h3>
-<p style="font-size:13px;">✅ Opération enregistrée au nom du magasinier</p>
+<div class="modal-content"><h3>📥 ENTRÉE PRODUIT</h3>
+<p style="font-size:13px;">👤 Opération enregistrée au nom du magasinier</p>
 <input type="text" id="inRef" placeholder="Référence produit">
 <input type="number" id="inQty" placeholder="Quantité reçue">
 <button class="btn green" onclick="validateEntry()">Valider</button>
@@ -864,7 +924,7 @@ hr { margin: 15px 0; }
 
 <!-- MODAL SORTIE MODIFIÉE AVEC BOUTON DE RECHERCHE -->
 <div class="modal" id="outModal">
-<div class="modal-content"><h3>➖ SORTIE PRODUIT</h3>
+<div class="modal-content"><h3>📤 SORTIE PRODUIT</h3>
 <p style="font-size:13px;">Sélectionnez un bénéficiaire parmi les réceptionnaires ou saisissez manuellement</p>
 
 <div class="beneficiaire-card">
@@ -879,7 +939,7 @@ hr { margin: 15px 0; }
 </div>
 
 <hr>
-<h4>✍️ Ou saisie manuelle</h4>
+<h4>✏️ Ou saisie manuelle</h4>
 <input type="text" id="destinataireNom" placeholder="Nom du bénéficiaire (manuel)">
 <input type="text" id="destinataireUET" placeholder="UET / Service (manuel)">
 
@@ -892,26 +952,30 @@ hr { margin: 15px 0; }
 <button class="btn dark" onclick="closeModal('outModal')">Fermer</button>
 </div></div>
 
-<!-- MODAL GESTION DES MAGASINIERS -->
+<!-- MODAL GESTION DES MAGASINIERS AVEC MOT DE PASSE -->
 <div class="modal" id="magasiniersModal">
 <div class="modal-content">
-    <h3>🏬 Gestion des Magasiniers</h3>
+    <h3>👥 Gestion des Magasiniers</h3>
     
     <div class="filter-section" style="margin-bottom:20px;">
         <h4 id="magFormTitle">➕ Ajouter un nouveau magasinier</h4>
         <div class="form-row">
-            <div class="form-group"><label>📛 IPN *</label><input type="text" id="magIPN" placeholder="Ex: M-001"></div>
+            <div class="form-group"><label>🆔 IPN *</label><input type="text" id="magIPN" placeholder="Ex: M-001"></div>
             <div class="form-group"><label>👤 Nom complet *</label><input type="text" id="magNom" placeholder="Nom et prénom"></div>
         </div>
         <div class="form-row">
-            <div class="form-group"><label>📱 Téléphone</label><input type="tel" id="magPhone" placeholder="Ex: 06XXXXXXXX"></div>
+            <div class="form-group"><label>📞 Téléphone</label><input type="tel" id="magPhone" placeholder="Ex: 06XXXXXXXX"></div>
             <div class="form-group"><label>👥 Équipe</label><input type="text" id="magEquipe" placeholder="Ex: Équipe A, Matin, Nuit..."></div>
         </div>
-        <div class="form-group"><label>🏢 UET</label><input type="text" id="magUET" value="MAGASINIER" readonly style="background:#f0f0f0;"></div>
+        <div class="form-row">
+            <div class="form-group"><label>🔑 Mot de passe *</label><input type="password" id="magPassword" placeholder="Mot de passe (min 6 caractères)"></div>
+            <div class="form-group"><label>✅ Confirmer mot de passe</label><input type="password" id="magConfirmPassword" placeholder="Confirmer le mot de passe"></div>
+        </div>
+        <div class="form-group"><label>🏷️ UET</label><input type="text" id="magUET" value="MAGASINIER" readonly style="background:#f0f0f0;"></div>
         <input type="hidden" id="editMagKey" value="">
         <div class="action-buttons" style="justify-content:center; margin-top:15px;">
             <button class="btn green" onclick="saveMagasinier()">💾 Enregistrer</button>
-            <button class="btn silver" onclick="resetMagasinierForm()">🗑️ Annuler</button>
+            <button class="btn silver" onclick="resetMagasinierForm()">❌ Annuler</button>
         </div>
     </div>
     
@@ -919,7 +983,7 @@ hr { margin: 15px 0; }
     <h4>📋 Liste des magasiniers</h4>
     <div class="users-list-section">
         <table class="users-table" id="magasiniersTable">
-            <thead><tr><th>IPN</th><th>Nom</th><th>Téléphone</th><th>Équipe</th><th>UET</th><th>Actions</th></tr></thead>
+            <thead><tr><th>IPN</th><th>Nom</th><th>Téléphone</th><th>Équipe</th><th>UET</th><th>Mot de passe</th><th>Actions</th></tr></thead>
             <tbody id="magasiniersList"></tbody>
         </table>
     </div>
@@ -929,23 +993,23 @@ hr { margin: 15px 0; }
 <!-- MODAL GESTION DES RECEPTIONNAIRES (COMPLET AVEC CRUD) -->
 <div class="modal" id="receptionnairesModal">
 <div class="modal-content">
-    <h3>📦 Gestion des Réceptionnaires</h3>
+    <h3>📋 Gestion des Réceptionnaires</h3>
     
     <div class="filter-section" style="margin-bottom:20px;">
         <h4 id="recFormTitle">➕ Ajouter un nouveau réceptionnaire</h4>
         <div class="form-row">
-            <div class="form-group"><label>📛 IPN *</label><input type="text" id="recIPN" placeholder="Ex: R-001"></div>
+            <div class="form-group"><label>🆔 IPN *</label><input type="text" id="recIPN" placeholder="Ex: R-001"></div>
             <div class="form-group"><label>👤 Nom complet *</label><input type="text" id="recNom" placeholder="Nom et prénom"></div>
         </div>
         <div class="form-row">
-            <div class="form-group"><label>📱 Téléphone</label><input type="tel" id="recPhone" placeholder="Ex: 06XXXXXXXX"></div>
+            <div class="form-group"><label>📞 Téléphone</label><input type="tel" id="recPhone" placeholder="Ex: 06XXXXXXXX"></div>
             <div class="form-group"><label>👥 Équipe</label><input type="text" id="recEquipe" placeholder="Ex: Logistique, Achat..."></div>
         </div>
-        <div class="form-group"><label>🏢 UET (Service)</label><input type="text" id="recUET" placeholder="Ex: LOGISTIQUE, ACHATS, STOCK..."></div>
+        <div class="form-group"><label>🏷️ UET (Service)</label><input type="text" id="recUET" placeholder="Ex: LOGISTIQUE, ACHATS, STOCK..."></div>
         <input type="hidden" id="editRecKey" value="">
         <div class="action-buttons" style="justify-content:center; margin-top:15px;">
             <button class="btn green" onclick="saveReceptionnaire()">💾 Enregistrer</button>
-            <button class="btn silver" onclick="resetReceptionnaireForm()">🗑️ Annuler</button>
+            <button class="btn silver" onclick="resetReceptionnaireForm()">❌ Annuler</button>
         </div>
     </div>
     
@@ -971,21 +1035,21 @@ hr { margin: 15px 0; }
         </div>
     </div>
     <div id="editProductResult" style="display:none;">
-        <div class="edit-info-message">⚠️ Modifiez uniquement les champs que vous souhaitez mettre à jour. Laissez vides les champs inchangés.</div>
+        <div class="edit-info-message">ℹ️ Modifiez uniquement les champs que vous souhaitez mettre à jour. Laissez vides les champs inchangés.</div>
         <div class="product-found-card" id="productFoundInfo"></div>
         <div class="image-edit-section">
-            <h4>📸 Modifier l'image du produit</h4>
+            <h4>🖼️ Modifier l'image du produit</h4>
             <div class="current-image" id="currentImageContainer"><p>Image actuelle :</p><img id="currentProductImage" src="" alt="Image actuelle"></div>
             <div class="upload-area" onclick="document.getElementById('editImageFile').click()"><p>📁 Cliquez ou glissez-déposez une image</p><input type="file" id="editImageFile" accept="image/*" onchange="handleEditImageUpload(event)"></div>
-            <div class="image-edit-buttons"><button class="btn camera-btn" onclick="startEditCamera()">📷 Prendre une photo</button><button class="btn red" onclick="stopEditCamera()">🔴 Arrêter caméra</button></div>
+            <div class="image-edit-buttons"><button class="btn camera-btn" onclick="startEditCamera()">📷 Prendre une photo</button><button class="btn red" onclick="stopEditCamera()">⏹️ Arrêter caméra</button></div>
             <div class="video-container" id="editVideoContainer" style="display:none;"><video id="editVideo" autoplay playsinline></video><div class="video-controls"><button class="btn switch-camera-btn" onclick="switchEditCamera()">🔄 Changer caméra</button><button class="btn green" onclick="takeEditPhoto()">📸 Prendre</button></div></div>
             <div class="image-preview" id="editPhotoPreview" style="display:none;"><p>Nouvelle image :</p><img id="editCapturedImage" src="" alt="Nouvelle photo"><button class="btn silver btn-small" onclick="clearEditImage()">🗑️ Supprimer</button></div>
         </div>
-        <hr><h4>📝 Champs modifiables</h4>
-        <div class="form-row"><div class="form-group"><label>✏️ Nouvelle désignation</label><input type="text" id="editDesignation" placeholder="Laissez vide"></div><div class="form-group"><label>✏️ Nouvel emplacement</label><input type="text" id="editEmplacement" placeholder="Laissez vide"></div></div>
-        <div class="form-row"><div class="form-group"><label>✏️ Nouveau stock initial</label><input type="number" id="editStockInit" placeholder="Laissez vide"></div><div class="form-group"><label>✏️ Nouveau stock max</label><input type="number" id="editStockMax" placeholder="Laissez vide"></div></div>
-        <div class="form-row"><div class="form-group"><label>✏️ Nouvelle quantité par boîte</label><input type="number" id="editQteBoite" placeholder="Laissez vide"></div><div class="form-group"><label>✏️ Nouveau code-barres</label><input type="text" id="editCodeBarre" placeholder="Laissez vide"></div></div>
-        <div class="form-group"><label>✏️ Nouvelle description</label><textarea id="editDescription" rows="3" placeholder="Laissez vide" style="border-radius:16px;"></textarea></div>
+        <hr><h4>✏️ Champs modifiables</h4>
+        <div class="form-row"><div class="form-group"><label>📝 Nouvelle désignation</label><input type="text" id="editDesignation" placeholder="Laissez vide"></div><div class="form-group"><label>📍 Nouvel emplacement</label><input type="text" id="editEmplacement" placeholder="Laissez vide"></div></div>
+        <div class="form-row"><div class="form-group"><label>📊 Nouveau stock initial</label><input type="number" id="editStockInit" placeholder="Laissez vide"></div><div class="form-group"><label>📈 Nouveau stock max</label><input type="number" id="editStockMax" placeholder="Laissez vide"></div></div>
+        <div class="form-row"><div class="form-group"><label>📦 Nouvelle quantité par boîte</label><input type="number" id="editQteBoite" placeholder="Laissez vide"></div><div class="form-group"><label>🔢 Nouveau code-barres</label><input type="text" id="editCodeBarre" placeholder="Laissez vide"></div></div>
+        <div class="form-group"><label>📝 Nouvelle description</label><textarea id="editDescription" rows="3" placeholder="Laissez vide" style="border-radius:16px;"></textarea></div>
         <div class="action-buttons" style="justify-content:center; margin-top:20px;"><button class="btn warning" onclick="saveProductModifications()">💾 Enregistrer les modifications</button></div>
     </div>
     <button class="btn dark" onclick="closeModal('editProductModal');resetEditForm();stopEditCamera()" style="margin-top:15px;">Fermer</button>
@@ -1001,8 +1065,8 @@ hr { margin: 15px 0; }
 <input type="text" id="prodDescription" placeholder="Description">
 <div class="form-row"><div class="form-group"><input type="number" id="prodQteBoite" placeholder="Qté/boîte"></div></div>
 <div id="codeBarrePreview" class="code-barre-preview"></div>
-<hr><h4>📸 Photo (caméra)</h4>
-<div class="video-container"><video id="video" autoplay playsinline></video><div class="video-controls"><button class="btn camera-btn" onclick="startCamera()">📷 Activer</button><button class="btn switch-camera-btn" onclick="switchCamera()">🔄 Changer caméra</button><button class="btn green" onclick="takePhoto()">📸 Prendre</button><button class="btn red" onclick="stopCamera()">🔴 Arrêter</button></div></div>
+<hr><h4>📷 Photo (caméra)</h4>
+<div class="video-container"><video id="video" autoplay playsinline></video><div class="video-controls"><button class="btn camera-btn" onclick="startCamera()">📷 Activer</button><button class="btn switch-camera-btn" onclick="switchCamera()">🔄 Changer caméra</button><button class="btn green" onclick="takePhoto()">📸 Prendre</button><button class="btn red" onclick="stopCamera()">⏹️ Arrêter</button></div></div>
 <div class="image-preview" id="photoPreview" style="display:none;"><p>Aperçu :</p><img id="capturedImage" src="" alt="Photo"></div>
 <button class="btn green" onclick="createNewProduct()">Créer</button>
 <button class="btn dark" onclick="closeModal('newProductModal');resetProductForm();stopCamera()">Fermer</button>
@@ -1010,8 +1074,8 @@ hr { margin: 15px 0; }
 
 <!-- MODAL PRODUITS -->
 <div class="modal" id="productsModal">
-<div class="modal-content"><h3>📦 Catalogue complet des produits</h3>
-<button class="btn green" onclick="exportProducts()">📤 Exporter Excel</button>
+<div class="modal-content"><h3>📋 Catalogue complet des produits</h3>
+<button class="btn green" onclick="exportProducts()">📎 Exporter Excel</button>
 <div style="overflow-x:auto; max-height: 60vh;"><table id="prodTable"></table></div>
 <button class="btn dark" onclick="closeModal('productsModal')">Fermer</button>
 </div></div>
@@ -1019,24 +1083,24 @@ hr { margin: 15px 0; }
 <!-- MODAL OPÉRATIONS -->
 <div class="modal" id="operationsModal">
 <div class="modal-content">
-    <h3>📊 Historique des opérations <span id="operationsCount" class="stats-badge">0</span></h3>
+    <h3>📜 Historique des opérations <span id="operationsCount" class="stats-badge">0</span></h3>
     <div class="filter-section">
         <div class="filter-row">
             <div class="filter-group"><label>🔍 Filtrer par</label><select id="filterType"><option value="all">Tous les champs</option><option value="type">Type d'opération</option><option value="reference">Référence produit</option><option value="beneficiaire">Bénéficiaire</option><option value="magasinier">Magasinier</option><option value="date">Date</option></select></div>
             <div class="filter-group"><label>📝 Valeur de recherche</label><input type="text" id="filterValue" placeholder="Entrez votre recherche..." onkeypress="if(event.key==='Enter') searchOperations()"></div>
-            <div class="filter-actions"><button class="btn cyan" onclick="searchOperations()">🔍 Rechercher</button><button class="btn silver" onclick="resetFilters()">🗑️ Réinitialiser</button></div>
+            <div class="filter-actions"><button class="btn cyan" onclick="searchOperations()">🔍 Rechercher</button><button class="btn silver" onclick="resetFilters()">🔄 Réinitialiser</button></div>
         </div>
     </div>
-    <button class="btn green" onclick="exportOperations()">📤 Exporter Excel</button>
+    <button class="btn green" onclick="exportOperations()">📎 Exporter Excel</button>
     <div style="overflow-x:auto; max-height: 55vh;"><table id="opTable" style="min-width:700px;"><thead><tr><th>Type</th><th>Réf</th><th>Produit</th><th>Qté</th><th>Date</th><th>Heure</th><th>Bénéficiaire</th><th>Magasinier</th></tr></thead><tbody id="opTableBody"><tr><td colspan="8" class="text-center">Chargement...</td></tr></tbody></table></div>
     <button class="btn dark" onclick="closeModal('operationsModal')">Fermer</button>
 </div></div>
 
 <!-- MODAL TICKETS -->
 <div class="modal" id="ticketModal">
-<div class="modal-content"><h3>🏷️ Impression des Tickets</h3>
+<div class="modal-content"><h3>🖨️ Impression des Tickets</h3>
 <input type="text" id="ticketReference" placeholder="Référence produit" style="margin-bottom:15px;">
-<div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center;"><button class="btn blue" onclick="printSingleTicket()">🖨️ Imprimer par référence</button><button class="btn green" onclick="printAllTickets()">🖨️ Imprimer tous les tickets</button><button class="btn dark" onclick="closeModal('ticketModal')">Fermer</button></div>
+<div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center;"><button class="btn blue" onclick="printSingleTicket()">🏷️ Imprimer par référence</button><button class="btn green" onclick="printAllTickets()">📦 Imprimer tous les tickets</button><button class="btn dark" onclick="closeModal('ticketModal')">Fermer</button></div>
 </div></div>
 
 </div>
@@ -1062,9 +1126,11 @@ let currentEditProductData = null;
 let inventorySearchProductKey = null;
 let inventorySearchProductData = null;
 let demandesFiltrees = [];
-let pendingRefusDemandeId = null; // Pour stocker l'ID de la demande lors du refus
+let pendingRefusDemandeId = null;
+let produitsMap = {};
+let showTreated = true;
 
-// ========== GESTION DES MAGASINIERS ==========
+// ========== GESTION DES MAGASINIERS AVEC MOT DE PASSE ==========
 async function loadMagasiniersList() {
     const response = await fetch(`${BASE}/utilisateurs.json`);
     const data = await response.json();
@@ -1073,10 +1139,22 @@ async function loadMagasiniersList() {
     for(let key in data) {
         const user = data[key];
         if(user.uet === "MAGASINIER") {
-            tbody.innerHTML += `<tr><td>${escapeHtml(user.ipn || "")}<\/td><td>${escapeHtml(user.nom || "")}<\/td><td>${escapeHtml(user.telephone || "")}<\/td><td>${escapeHtml(user.equipe || "")}<\/td><td>${escapeHtml(user.uet || "")}<\/td><td><button class="btn cyan btn-small" onclick="editMagasinier('${key}', '${escapeHtml(user.ipn)}', '${escapeHtml(user.nom)}', '${escapeHtml(user.telephone || "")}', '${escapeHtml(user.equipe || "")}')">✏️ Modifier<\/button> <button class="btn red btn-small" onclick="deleteMagasinier('${key}', '${escapeHtml(user.nom)}')">🗑️ Supprimer<\/button><\/td><\/tr>`;
+            tbody.innerHTML += `<tr>
+                <td>${escapeHtml(user.ipn || "")}</td>
+                <td>${escapeHtml(user.nom || "")}</td>
+                <td>${escapeHtml(user.telephone || "")}</td>
+                <td>${escapeHtml(user.equipe || "")}</td>
+                <td>${escapeHtml(user.uet || "")}</td>
+                <td>${user.motDePasse ? '●●●●●●' : 'Non défini'}</td>
+                <td>
+                    <button class="btn cyan btn-small" onclick="editMagasinier('${key}', '${escapeHtml(user.ipn)}', '${escapeHtml(user.nom)}', '${escapeHtml(user.telephone || "")}', '${escapeHtml(user.equipe || "")}')">✏️ Modifier</button>
+                    <button class="btn purple btn-small" onclick="resetMagasinierPassword('${key}', '${escapeHtml(user.nom)}')">🔑 Réinitialiser mot de passe</button>
+                    <button class="btn red btn-small" onclick="deleteMagasinier('${key}', '${escapeHtml(user.nom)}')">🗑️ Supprimer</button>
+                  </td>
+              </tr>`;
         }
     }
-    if(tbody.innerHTML === "") tbody.innerHTML = '<tr><td colspan="6" class="text-center">📭 Aucun magasinier trouvé<\/td><\/tr>';
+    if(tbody.innerHTML === "") tbody.innerHTML = '<tr><td colspan="7" class="text-center">📭 Aucun magasinier trouvé</td></tr>';
 }
 
 function editMagasinier(key, ipn, nom, telephone, equipe) {
@@ -1085,6 +1163,8 @@ function editMagasinier(key, ipn, nom, telephone, equipe) {
     document.getElementById("magNom").value = nom;
     document.getElementById("magPhone").value = telephone;
     document.getElementById("magEquipe").value = equipe;
+    document.getElementById("magPassword").value = "";
+    document.getElementById("magConfirmPassword").value = "";
     document.getElementById("magFormTitle").innerHTML = "✏️ Modifier le magasinier";
 }
 
@@ -1094,6 +1174,8 @@ function resetMagasinierForm() {
     document.getElementById("magNom").value = "";
     document.getElementById("magPhone").value = "";
     document.getElementById("magEquipe").value = "";
+    document.getElementById("magPassword").value = "";
+    document.getElementById("magConfirmPassword").value = "";
     document.getElementById("magFormTitle").innerHTML = "➕ Ajouter un nouveau magasinier";
 }
 
@@ -1102,9 +1184,28 @@ async function saveMagasinier() {
     const nom = document.getElementById("magNom").value.trim();
     const telephone = document.getElementById("magPhone").value.trim();
     const equipe = document.getElementById("magEquipe").value.trim();
+    const password = document.getElementById("magPassword").value;
+    const confirmPassword = document.getElementById("magConfirmPassword").value;
     const editKey = document.getElementById("editMagKey").value;
+    
     if(!ipn || !nom) { alert("IPN et Nom sont obligatoires"); return; }
-    const magasinierData = { ipn, nom, telephone, equipe, uet: "MAGASINIER" };
+    
+    if(!editKey) {
+        if(!password || password.length < 6) { alert("Le mot de passe doit contenir au moins 6 caractères"); return; }
+        if(password !== confirmPassword) { alert("Les mots de passe ne correspondent pas"); return; }
+    } else if(password) {
+        if(password.length < 6) { alert("Le mot de passe doit contenir au moins 6 caractères"); return; }
+        if(password !== confirmPassword) { alert("Les mots de passe ne correspondent pas"); return; }
+    }
+    
+    const magasinierData = { 
+        ipn, nom, telephone, equipe, uet: "MAGASINIER"
+    };
+    
+    if(password) {
+        magasinierData.motDePasse = btoa(password);
+    }
+    
     if(editKey) {
         await fetch(`${BASE}/utilisateurs/${editKey}.json`, { method: "PATCH", body: JSON.stringify(magasinierData) });
         alert(`✅ Magasinier "${nom}" modifié !`);
@@ -1118,12 +1219,100 @@ async function saveMagasinier() {
     await loadMagasiniersList();
 }
 
+async function resetMagasinierPassword(key, nom) {
+    const newPassword = prompt(`Nouveau mot de passe pour "${nom}" (min 6 caractères) :`);
+    if(!newPassword || newPassword.length < 6) { alert("Mot de passe invalide (min 6 caractères)"); return; }
+    const confirmNew = prompt("Confirmez le mot de passe :");
+    if(newPassword !== confirmNew) { alert("Les mots de passe ne correspondent pas"); return; }
+    
+    await fetch(`${BASE}/utilisateurs/${key}.json`, { 
+        method: "PATCH", 
+        body: JSON.stringify({ motDePasse: btoa(newPassword) }) 
+    });
+    alert(`🔑 Mot de passe réinitialisé pour "${nom}"`);
+    await loadMagasiniersList();
+}
+
 async function deleteMagasinier(key, nom) {
     if(confirm(`Supprimer "${nom}" ?`)) {
         await fetch(`${BASE}/utilisateurs/${key}.json`, { method: "DELETE" });
-        alert(`✅ Magasinier supprimé !`);
+        alert(`🗑️ Magasinier supprimé !`);
         await loadMagasiniersList();
     }
+}
+
+// ========== CHANGEMENT MOT DE PASSE POUR L'UTILISATEUR CONNECTÉ ==========
+function openChangePasswordModal() {
+    document.getElementById("oldPassword").value = "";
+    document.getElementById("newPassword").value = "";
+    document.getElementById("confirmPassword").value = "";
+    document.getElementById("passwordStrength").innerHTML = "";
+    openModal("changePasswordModal");
+}
+
+function checkPasswordStrength() {
+    const password = document.getElementById("newPassword").value;
+    const strengthDiv = document.getElementById("passwordStrength");
+    if(!password) {
+        strengthDiv.innerHTML = "";
+        return;
+    }
+    let strength = 0;
+    if(password.length >= 6) strength++;
+    if(password.length >= 10) strength++;
+    if(/[A-Z]/.test(password)) strength++;
+    if(/[0-9]/.test(password)) strength++;
+    if(/[^A-Za-z0-9]/.test(password)) strength++;
+    
+    if(strength <= 2) strengthDiv.innerHTML = '<span class="strength-weak">🔴 Mot de passe faible</span>';
+    else if(strength <= 4) strengthDiv.innerHTML = '<span class="strength-medium">🟠 Mot de passe moyen</span>';
+    else strengthDiv.innerHTML = '<span class="strength-strong">🟢 Mot de passe fort</span>';
+}
+
+async function changePassword() {
+    const oldPassword = document.getElementById("oldPassword").value;
+    const newPassword = document.getElementById("newPassword").value;
+    const confirmPassword = document.getElementById("confirmPassword").value;
+    
+    if(!oldPassword || !newPassword) { alert("Veuillez remplir tous les champs"); return; }
+    if(newPassword.length < 6) { alert("Le nouveau mot de passe doit contenir au moins 6 caractères"); return; }
+    if(newPassword !== confirmPassword) { alert("Les mots de passe ne correspondent pas"); return; }
+    
+    const response = await fetch(`${BASE}/utilisateurs.json`);
+    const data = await response.json();
+    let userKey = null;
+    let userData = null;
+    for(let key in data) {
+        if(data[key].ipn === currentUser.ipn && data[key].nom === currentUser.nom) {
+            userKey = key;
+            userData = data[key];
+            break;
+        }
+    }
+    
+    if(userData && userData.motDePasse) {
+        const storedPassword = atob(userData.motDePasse);
+        if(storedPassword !== oldPassword) {
+            alert("❌ Ancien mot de passe incorrect");
+            return;
+        }
+    } else if(!userData.motDePasse && oldPassword !== "") {
+        if(oldPassword !== "changeme") {
+            alert("❌ Ancien mot de passe incorrect");
+            return;
+        }
+    }
+    
+    await fetch(`${BASE}/utilisateurs/${userKey}.json`, { 
+        method: "PATCH", 
+        body: JSON.stringify({ motDePasse: btoa(newPassword) }) 
+    });
+    
+    alert("✅ Mot de passe modifié avec succès !");
+    closeModal("changePasswordModal");
+    
+    currentUser.motDePasse = btoa(newPassword);
+    localStorage.setItem("magasin_current_user", JSON.stringify(currentUser));
 }
 
 // ========== GESTION DES RECEPTIONNAIRES ==========
@@ -1137,11 +1326,21 @@ async function loadReceptionnairesListComplete() {
         const user = data[key];
         if(user.uet && user.uet !== "MAGASINIER") {
             receptionnairesPourFiltre.push(user.nom || user.ipn);
-            tbody.innerHTML += `<tr><td>${escapeHtml(user.ipn || "")}<\/td><td>${escapeHtml(user.nom || "")}<\/td><td>${escapeHtml(user.telephone || "")}<\/td><td>${escapeHtml(user.equipe || "")}<\/td><td>${escapeHtml(user.uet || "")}<\/td><td><button class="btn cyan btn-small" onclick="editReceptionnaire('${key}', '${escapeHtml(user.ipn)}', '${escapeHtml(user.nom)}', '${escapeHtml(user.telephone || "")}', '${escapeHtml(user.equipe || "")}', '${escapeHtml(user.uet || "")}')">✏️ Modifier<\/button> <button class="btn red btn-small" onclick="deleteReceptionnaire('${key}', '${escapeHtml(user.nom)}')">🗑️ Supprimer<\/button><\/td><\/tr>`;
+            tbody.innerHTML += `<tr>
+                <td>${escapeHtml(user.ipn || "")}</td>
+                <td>${escapeHtml(user.nom || "")}</td>
+                <td>${escapeHtml(user.telephone || "")}</td>
+                <td>${escapeHtml(user.equipe || "")}</td>
+                <td>${escapeHtml(user.uet || "")}</td>
+                <td>
+                    <button class="btn cyan btn-small" onclick="editReceptionnaire('${key}', '${escapeHtml(user.ipn)}', '${escapeHtml(user.nom)}', '${escapeHtml(user.telephone || "")}', '${escapeHtml(user.equipe || "")}', '${escapeHtml(user.uet || "")}')">✏️ Modifier</button>
+                    <button class="btn red btn-small" onclick="deleteReceptionnaire('${key}', '${escapeHtml(user.nom)}')">🗑️ Supprimer</button>
+                  </td>
+              </tr>`;
         }
     }
-    if(tbody.innerHTML === "") tbody.innerHTML = '<tr><td colspan="6" class="text-center">📭 Aucun réceptionnaire trouvé<\/td><\/tr>';
-    // Remplir le select du filtre des demandes
+    if(tbody.innerHTML === "") tbody.innerHTML = '<tr><td colspan="6" class="text-center">📭 Aucun réceptionnaire trouvé</td></tr>';
+    
     const selectFiltre = document.getElementById("demandeFiltreReceptionnaire");
     if(selectFiltre) {
         selectFiltre.innerHTML = '<option value="">Tous les réceptionnaires</option>';
@@ -1197,7 +1396,7 @@ async function saveReceptionnaire() {
 async function deleteReceptionnaire(key, nom) {
     if(confirm(`Supprimer le réceptionnaire "${nom}" ?`)) {
         await fetch(`${BASE}/utilisateurs/${key}.json`, { method: "DELETE" });
-        alert(`✅ Réceptionnaire supprimé !`);
+        alert(`🗑️ Réceptionnaire supprimé !`);
         await loadReceptionnairesListComplete();
         await loadReceptionnairesList();
     }
@@ -1222,7 +1421,7 @@ function displayReceptionnairesList(list) {
     if(!container) return;
     if(list.length === 0) { container.innerHTML = '<div class="text-center" style="padding:20px;">📭 Aucun réceptionnaire trouvé</div>'; return; }
     let html = '';
-    list.forEach(rec => { html += `<div class="beneficiaire-item" onclick="selectBeneficiaire('${escapeHtml(rec.ipn)}', '${escapeHtml(rec.nom)}', '${escapeHtml(rec.uet)}')"><strong>${escapeHtml(rec.nom)}</strong><br><small>📛 IPN: ${escapeHtml(rec.ipn)} | 🏢 UET: ${escapeHtml(rec.uet)}</small></div>`; });
+    list.forEach(rec => { html += `<div class="beneficiaire-item" onclick="selectBeneficiaire('${escapeHtml(rec.ipn)}', '${escapeHtml(rec.nom)}', '${escapeHtml(rec.uet)}')"><strong>${escapeHtml(rec.nom)}</strong><br><small>🆔 IPN: ${escapeHtml(rec.ipn)} | 🏷️ UET: ${escapeHtml(rec.uet)}</small></div>`; });
     container.innerHTML = html;
 }
 
@@ -1245,35 +1444,63 @@ function selectBeneficiaire(ipn, nom, uet) {
 async function loadDemandes() {
     if(!ensureLoggedIn()) return;
     try {
+        const prodRes = await fetch(`${BASE}/produits.json`);
+        const produitsData = await prodRes.json();
+        produitsMap = {};
+        for(let k in produitsData) {
+            produitsMap[produitsData[k].reference] = produitsData[k];
+        }
+        
         const res = await fetch(`${BASE}/demandes.json`);
         const data = await res.json();
         demandes = [];
         for(let key in data) {
             const demande = data[key];
-            // Récupérer l'emplacement du produit
             let emplacement = "";
-            if(demande.referenceProduit) {
-                const prodRes = await fetch(`${BASE}/produits.json`);
-                const produitsData = await prodRes.json();
-                for(let k in produitsData) {
-                    if(produitsData[k].reference === demande.referenceProduit) {
-                        emplacement = produitsData[k].emplacement || "";
-                        break;
-                    }
-                }
+            let stockActuel = 0;
+            const produit = produitsMap[demande.referenceProduit];
+            if(produit) {
+                emplacement = produit.emplacement || "";
+                stockActuel = produit.stockActuel || 0;
             }
             demandes.push({ 
                 firebaseKey: key, 
                 ...demande,
                 quantiteOriginale: demande.quantite,
                 masque: demande.masque === true,
-                produitEmplacement: emplacement
+                produitEmplacement: emplacement,
+                stockActuelProduit: stockActuel
             });
         }
         demandes.sort((a,b) => (b.date + b.heure).localeCompare(a.date + a.heure));
         appliquerFiltresDemandes();
-        await loadReceptionnairesListComplete(); // Met à jour le filtre
+        await loadReceptionnairesListComplete();
     } catch(e) { console.error(e); }
+}
+
+function toggleShowTreated() {
+    showTreated = !showTreated;
+    const btn = document.getElementById("toggleTreatedBtn");
+    if(showTreated) {
+        btn.innerHTML = "🔒 Masquer les traitées";
+        btn.classList.remove("green");
+        btn.classList.add("orange");
+    } else {
+        btn.innerHTML = "👁️ Afficher tout";
+        btn.classList.remove("orange");
+        btn.classList.add("green");
+    }
+    appliquerFiltresDemandes();
+}
+
+function getTotalDemandesEnAttentePourProduit(referenceProduit, demandeCouranteId = null) {
+    let total = 0;
+    demandes.forEach(d => {
+        if(d.referenceProduit === referenceProduit && d.statut === "en_attente" && d.masque !== true) {
+            total += (d.quantite || 0);
+        }
+    });
+    return total;
 }
 
 function appliquerFiltresDemandes() {
@@ -1283,6 +1510,7 @@ function appliquerFiltresDemandes() {
     demandesFiltrees = demandes.filter(d => {
         if(filtreReceptionnaire && d.nomUtilisateur !== filtreReceptionnaire) return false;
         if(d.masque === true) return false;
+        if(!showTreated && (d.statut === "valide" || d.statut === "refuse")) return false;
         return true;
     });
     
@@ -1294,6 +1522,7 @@ function reinitialiserFiltresDemandes() {
     appliquerFiltresDemandes();
 }
 
+// FONCTION MODIFIÉE : Modification de la quantité avec ajout d'un commentaire automatique
 async function modifierQuantiteDemande(demandeId, nouvelleQuantite) {
     const demande = demandes.find(d => d.firebaseKey === demandeId);
     if(!demande) return;
@@ -1301,12 +1530,54 @@ async function modifierQuantiteDemande(demandeId, nouvelleQuantite) {
         alert("Quantité invalide");
         return;
     }
+    
+    const ancienneQuantite = demande.quantite;
+    
+    if(ancienneQuantite === nouvelleQuantite) {
+        alert("Aucune modification de quantité");
+        return;
+    }
+    
+    // Récupérer le commentaire existant ou créer un nouveau tableau
+    let historiqueModifications = demande.historiqueModifications || [];
+    const now = new Date();
+    const dateModification = now.toLocaleDateString('fr-FR');
+    const heureModification = now.toLocaleTimeString('fr-FR');
+    
+    // Ajouter l'entrée d'historique
+    historiqueModifications.push({
+        date: dateModification,
+        heure: heureModification,
+        ancienneQuantite: ancienneQuantite,
+        nouvelleQuantite: nouvelleQuantite,
+        modifiePar: currentUser ? currentUser.nom : "Magasinier",
+        action: "MODIFICATION_QUANTITE"
+    });
+    
+    // Ajouter un commentaire automatique pour informer le réceptionnaire
+    let commentaireActuel = demande.commentaireRefus || "";
+    const nouveauCommentaire = `[${dateModification} ${heureModification}] MODIFICATION QUANTITÉ par ${currentUser ? currentUser.nom : "Magasinier"}: quantité demandée changée de ${ancienneQuantite} à ${nouvelleQuantite}.`;
+    
+    const commentaireMisAJour = commentaireActuel ? commentaireActuel + "\n" + nouveauCommentaire : nouveauCommentaire;
+    
+    // Mettre à jour la demande dans Firebase
     await fetch(`${BASE}/demandes/${demandeId}.json`, { 
         method: "PATCH", 
-        body: JSON.stringify({ quantite: nouvelleQuantite }) 
+        body: JSON.stringify({ 
+            quantite: nouvelleQuantite,
+            commentaireRefus: commentaireMisAJour,
+            historiqueModifications: historiqueModifications,
+            derniereModificationPar: currentUser ? currentUser.nom : "Magasinier",
+            dateDerniereModification: now.toISOString()
+        }) 
     });
+    
+    // Mettre à jour localement
     demande.quantite = nouvelleQuantite;
-    alert(`✅ Quantité modifiée : ${nouvelleQuantite}`);
+    demande.commentaireRefus = commentaireMisAJour;
+    demande.historiqueModifications = historiqueModifications;
+    
+    alert(`✅ Quantité modifiée : ${ancienneQuantite} → ${nouvelleQuantite}\n📝 Un commentaire a été ajouté pour informer le réceptionnaire du changement.`);
     appliquerFiltresDemandes();
 }
 
@@ -1347,7 +1618,6 @@ async function confirmRefusWithComment() {
         }) 
     });
     
-    // Enregistrer l'opération de refus dans l'historique
     const demande = demandes.find(d => d.firebaseKey === pendingRefusDemandeId);
     if(demande) {
         await fetch(`${BASE}/operations.json`, { 
@@ -1384,7 +1654,7 @@ function afficherDemandes() {
     const toutes = [...enAttente, ...autres];
     
     if(toutes.length === 0) { 
-        tbody.innerHTML = "<tr><td colspan='10' class='text-center'>Aucune demande<\/td><\/tr>"; 
+        tbody.innerHTML = "<tr><td colspan='12' class='text-center'>Aucune demande<\/td><\/tr>"; 
         return; 
     }
     
@@ -1393,6 +1663,12 @@ function afficherDemandes() {
         if(d.statut === "valide") { statusClass = "status-valide"; statusText = "✅ Validée"; }
         else if(d.statut === "refuse") { statusClass = "status-refuse"; statusText = "❌ Refusée"; }
         else { statusClass = "status-en-attente"; statusText = "⏳ En attente"; }
+        
+        const totalDemandeEnAttente = getTotalDemandesEnAttentePourProduit(d.referenceProduit, d.firebaseKey);
+        const stockActuel = d.stockActuelProduit || 0;
+        
+        let stockHtml = `<span class="${stockActuel < d.quantite ? 'stock-warning' : 'stock-ok'}">${stockActuel}</span>`;
+        let totalDemandeHtml = `<span class="${totalDemandeEnAttente > stockActuel ? 'stock-warning' : ''}">${totalDemandeEnAttente}</span>`;
         
         const row = document.createElement("tr");
         
@@ -1409,9 +1685,9 @@ function afficherDemandes() {
                 </div>
             `;
         } else if(d.statut === "valide") {
-            actionsHtml = `<button class="btn silver btn-small" onclick="masquerDemande('${d.firebaseKey}')">🙈 Masquer</button>`;
+            actionsHtml = `<button class="btn silver btn-small" onclick="masquerDemande('${d.firebaseKey}')">🔒 Masquer</button>`;
         } else if(d.statut === "refuse") {
-            const commentaire = d.commentaireRefus ? `<br><span style="font-size:10px; color:#888;">📝 ${escapeHtml(d.commentaireRefus.substring(0, 30))}${d.commentaireRefus.length > 30 ? '...' : ''}</span>` : '';
+            const commentaire = d.commentaireRefus ? `<br><span style="font-size:10px; color:#888;">📝 ${escapeHtml(d.commentaireRefus.substring(0, 50))}${d.commentaireRefus.length > 50 ? '...' : ''}</span>` : '';
             actionsHtml = `<span style="color:#888;">Refusé${commentaire}</span>`;
         } else {
             actionsHtml = '<span style="color:#888;">-</span>';
@@ -1424,8 +1700,12 @@ function afficherDemandes() {
             <td>${escapeHtml(d.designationProduit || "")}</td>
             <td><strong>${escapeHtml(d.produitEmplacement || "-")}</strong></td>
             <td><strong>${d.quantite || 0}</strong></td>
+            
             <td>${escapeHtml(d.nomUtilisateur || "")}</td>
             <td>${escapeHtml(d.uetUtilisateur || "")}</td>
+
+            <td>${stockHtml}</td>
+            <td>${totalDemandeHtml}</td>
             <td class="status-cell"><span class="status ${statusClass}">${statusText}</span></td>
             <td class="action-buttons">${actionsHtml}</td>
         `;
@@ -1451,7 +1731,7 @@ async function validerDemande(demandeId) {
     }
     if(!produit) { alert(`❌ Produit non trouvé`); return; }
     if(produit.stockActuel < quantiteDemande) { 
-        alert(`❌ Stock insuffisant ! Stock actuel: ${produit.stockActuel}, demandé: ${quantiteDemande}`); 
+        alert(`⚠️ Stock insuffisant ! Stock actuel: ${produit.stockActuel}, demandé: ${quantiteDemande}`); 
         return; 
     }
     
@@ -1511,7 +1791,7 @@ async function refuserDemande(demandeId, commentaire) {
     await loadDemandes();
 }
 
-// ========== GESTION PRODUITS (NOUVEAU RENDU AVEC TRI ET COULEURS) ==========
+// ========== GESTION PRODUITS ==========
 async function loadDashboard() {
     if(!ensureLoggedIn()) return;
     const r = await fetch(BASE + "/produits.json");
@@ -1526,7 +1806,6 @@ function renderProductsWithSort() {
     if(!tbody) return;
     tbody.innerHTML = "";
     
-    // Préparer les lignes avec leurs catégories
     let rowsData = [];
     produits.forEach(p => {
         let stockActuel = p.stockActuel || 0;
@@ -1557,11 +1836,9 @@ function renderProductsWithSort() {
         });
     });
     
-    // Ordre de tri : rupture (rouge) -> faible (orange) -> normal (vert) -> max-depasse (bleu)
     const order = { "rupture": 1, "faible": 2, "normal": 3, "max-depasse": 4 };
     rowsData.sort((a, b) => order[a.category] - order[b.category]);
     
-    // Génération des lignes
     rowsData.forEach(item => {
         const p = item.produit;
         const category = item.category;
@@ -1580,7 +1857,7 @@ function renderProductsWithSort() {
             <td>${p.dateDernierInventaire || "-"}</td>
             <td>${p.dernierStockAvantInventaire !== undefined ? p.dernierStockAvantInventaire : "-"}</td>
             <td>${item.statusText}</td>
-          </tr>`;
+            </tr>`;
     });
 }
 
@@ -1597,7 +1874,7 @@ async function startCamera() {
             video.play();
             video.style.transform = currentFacingMode === "environment" ? "scaleX(1)" : "scaleX(-1)";
         } catch(err) { const stream = await navigator.mediaDevices.getUserMedia({ video: true }); mediaStream = stream; document.getElementById('video').srcObject = stream; }
-    } catch(err) { alert("❌ Impossible d'accéder à la caméra"); }
+    } catch(err) { alert("📷 Impossible d'accéder à la caméra"); }
 }
 
 function stopCamera() { if (mediaStream) { mediaStream.getTracks().forEach(track => track.stop()); mediaStream = null; } const video = document.getElementById('video'); if (video) video.srcObject = null; }
@@ -1612,7 +1889,7 @@ function takePhoto() {
     const context = canvas.getContext('2d');
     if (currentFacingMode === "user") { context.translate(canvas.width, 0); context.scale(-1, 1); context.drawImage(video, 0, 0, canvas.width, canvas.height); context.setTransform(1, 0, 0, 1, 0, 0); }
     else { context.drawImage(video, 0, 0, canvas.width, canvas.height); }
-    canvas.toBlob((blob) => { capturedPhotoBlob = blob; document.getElementById('capturedImage').src = URL.createObjectURL(blob); document.getElementById("photoPreview").style.display = 'block'; alert("✅ Photo prise !"); }, 'image/jpeg', 0.9);
+    canvas.toBlob((blob) => { capturedPhotoBlob = blob; document.getElementById('capturedImage').src = URL.createObjectURL(blob); document.getElementById("photoPreview").style.display = 'block'; alert("📸 Photo prise !"); }, 'image/jpeg', 0.9);
 }
 
 async function startEditCamera() {
@@ -1633,7 +1910,7 @@ async function startEditCamera() {
             document.getElementById('editVideo').srcObject = stream;
             document.getElementById("editVideoContainer").style.display = "block";
         }
-    } catch(err) { alert("❌ Impossible d'accéder à la caméra"); }
+    } catch(err) { alert("📷 Impossible d'accéder à la caméra"); }
 }
 
 function stopEditCamera() {
@@ -1654,12 +1931,12 @@ function takeEditPhoto() {
     const context = canvas.getContext('2d');
     if (editFacingMode === "user") { context.translate(canvas.width, 0); context.scale(-1, 1); context.drawImage(video, 0, 0, canvas.width, canvas.height); context.setTransform(1, 0, 0, 1, 0, 0); }
     else { context.drawImage(video, 0, 0, canvas.width, canvas.height); }
-    canvas.toBlob((blob) => { editCapturedPhotoBlob = blob; document.getElementById('editCapturedImage').src = URL.createObjectURL(blob); document.getElementById("editPhotoPreview").style.display = 'block'; alert("✅ Photo prise !"); stopEditCamera(); }, 'image/jpeg', 0.9);
+    canvas.toBlob((blob) => { editCapturedPhotoBlob = blob; document.getElementById('editCapturedImage').src = URL.createObjectURL(blob); document.getElementById("editPhotoPreview").style.display = 'block'; alert("📸 Photo prise !"); stopEditCamera(); }, 'image/jpeg', 0.9);
 }
 
 function handleEditImageUpload(event) {
     const file = event.target.files[0];
-    if (file) { editCapturedPhotoBlob = file; document.getElementById('editCapturedImage').src = URL.createObjectURL(file); document.getElementById("editPhotoPreview").style.display = 'block'; alert("✅ Image téléchargée !"); }
+    if (file) { editCapturedPhotoBlob = file; document.getElementById('editCapturedImage').src = URL.createObjectURL(file); document.getElementById("editPhotoPreview").style.display = 'block'; alert("🖼️ Image téléchargée !"); }
 }
 
 function clearEditImage() { editCapturedPhotoBlob = null; document.getElementById("editPhotoPreview").style.display = "none"; document.getElementById("editImageFile").value = ""; }
@@ -1714,7 +1991,7 @@ function generateCodeBarreAuto() {
     const ref = document.getElementById("prodRef").value.trim();
     const codeBarreInput = document.getElementById("prodCodeBarre");
     const preview = document.getElementById("codeBarrePreview");
-    if (ref) { const generatedCode = ref.toUpperCase().replace(/[^A-Z0-9]/g, ''); codeBarreInput.value = generatedCode; preview.innerHTML = `📊 Code-barres généré: <strong>${generatedCode}</strong>`; preview.style.display = "block"; }
+    if (ref) { const generatedCode = ref.toUpperCase().replace(/[^A-Z0-9]/g, ''); codeBarreInput.value = generatedCode; preview.innerHTML = `🔢 Code-barres généré: <strong>${generatedCode}</strong>`; preview.style.display = "block"; }
     else { codeBarreInput.value = ""; preview.innerHTML = ""; preview.style.display = "none"; }
 }
 
@@ -1772,10 +2049,10 @@ async function loadProducts() {
         tableHtml += '</thead><tbody>';
         for (let key in produitsData) {
             const produit = produitsData[key];
-            tableHtml += '<tr>';
+            tableHtml += '</tr>';
             for (let col of finalColumns) {
                 let value = produit[col];
-                if (col === 'image' && value) value = `<a href="${escapeHtml(value)}" target="_blank">📷 Voir</a>`;
+                if (col === 'image' && value) value = `<a href="${escapeHtml(value)}" target="_blank">🖼️ Voir</a>`;
                 else if (value === undefined || value === null) value = '-';
                 else if (typeof value === 'number') value = value;
                 else value = escapeHtml(String(value));
@@ -1830,7 +2107,13 @@ async function loadInventoryProducts() {
     tbody.innerHTML = "";
     for (let key in data) { 
         const produit = data[key]; 
-        tbody.innerHTML += `<tr><td>${escapeHtml(produit.reference)}<\/td><td>${escapeHtml(produit.designation)}<\/td><td><strong>${produit.stockActuel || 0}<\/strong><\/td><td><input type="number" id="newStock_${key}" value="${produit.stockActuel || 0}" style="width:100px;"><\/td><td><button class="btn green btn-small" onclick="updateInventory('${key}', '${produit.reference}', '${escapeHtml(produit.designation)}')">✅ Mettre à jour<\/button><\/td><\/tr>`; 
+        tbody.innerHTML += `<tr>
+            <td>${escapeHtml(produit.reference)}<\/td>
+            <td>${escapeHtml(produit.designation)}<\/td>
+            <td><strong>${produit.stockActuel || 0}<\/strong><\/td>
+            <td><input type="number" id="newStock_${key}" value="${produit.stockActuel || 0}" style="width:100px;"><\/td>
+            <td><button class="btn green btn-small" onclick="updateInventory('${key}', '${produit.reference}', '${escapeHtml(produit.designation)}')">✅ Mettre à jour<\/button><\/td>
+          </tr>`; 
     }
 }
 
@@ -1931,7 +2214,7 @@ function exportProducts() {
     const rows = [];
     const trs = table.querySelectorAll("tr");
     for (let tr of trs) { const row = []; const cells = tr.querySelectorAll("th, td"); for (let cell of cells) row.push(cell.innerText.replace(/Voir|Photo disponible/g, "Photo disponible")); rows.push(row); }
-    if (rows.length > 0) { let ws = XLSX.utils.aoa_to_sheet(rows); let wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Catalogue_Complet"); XLSX.writeFile(wb, "catalogue_produits.xlsx"); alert("✅ Export Excel réussi !"); }
+    if (rows.length > 0) { let ws = XLSX.utils.aoa_to_sheet(rows); let wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Catalogue_Complet"); XLSX.writeFile(wb, "catalogue_produits.xlsx"); alert("📎 Export Excel réussi !"); }
     else alert("Aucune donnée à exporter");
 }
 function exportOperations() {
@@ -1978,30 +2261,78 @@ function closeModal(id) { document.getElementById(id).style.display = "none"; }
 // ========== AUTHENTIFICATION ==========
 async function attemptLogin() {
     const identifier = document.getElementById("loginIdentifier").value.trim();
+    const password = document.getElementById("loginPassword").value;
     const errorDiv = document.getElementById("lockError");
-    if(!identifier) { errorDiv.style.display = "block"; errorDiv.innerText = "❌ Veuillez entrer votre IPN ou votre Nom"; return; }
+    if(!identifier) { errorDiv.style.display = "block"; errorDiv.innerText = "⚠️ Veuillez entrer votre IPN ou votre Nom"; return; }
+    if(!password) { errorDiv.style.display = "block"; errorDiv.innerText = "⚠️ Veuillez entrer votre mot de passe"; return; }
+    
     try {
         const res = await fetch(`${BASE}/utilisateurs.json`);
         const data = await res.json();
         let foundUser = null;
-        for(let key in data) { if(data[key].ipn === identifier || data[key].nom.toLowerCase() === identifier.toLowerCase()) { foundUser = data[key]; break; } }
+        for(let key in data) { 
+            if(data[key].ipn === identifier || data[key].nom.toLowerCase() === identifier.toLowerCase()) { 
+                foundUser = data[key]; 
+                break; 
+            } 
+        }
         if(foundUser && foundUser.uet === "MAGASINIER") {
-            currentUser = { ipn: foundUser.ipn, nom: foundUser.nom, uet: foundUser.uet, role: "magasinier", telephone: foundUser.telephone || "", equipe: foundUser.equipe || "" };
-            localStorage.setItem("magasin_current_user", JSON.stringify(currentUser));
-            document.getElementById("lockScreen").style.display = "none";
-            document.getElementById("mainApp").style.display = "block";
-            updateUIUser();
-            loadDashboard();
-            loadDemandes();
-            alert(`✅ Bienvenue ${currentUser.nom}`);
-        } else if(foundUser && foundUser.uet !== "MAGASINIER") { errorDiv.style.display = "block"; errorDiv.innerText = `⛔ ACCÈS REFUSÉ : Interface réservée aux MAGASINIERS.`; }
-        else { errorDiv.style.display = "block"; errorDiv.innerText = "❌ Accès refusé."; }
+            let passwordValid = false;
+            if(foundUser.motDePasse) {
+                const storedPassword = atob(foundUser.motDePasse);
+                passwordValid = (storedPassword === password);
+            } else {
+                if(password.length >= 6) {
+                    passwordValid = true;
+                    await fetch(`${BASE}/utilisateurs/${key}.json`, { 
+                        method: "PATCH", 
+                        body: JSON.stringify({ motDePasse: btoa(password) }) 
+                    });
+                    foundUser.motDePasse = btoa(password);
+                    alert("🔑 Mot de passe enregistré pour la première connexion !");
+                } else {
+                    passwordValid = false;
+                    errorDiv.style.display = "block"; 
+                    errorDiv.innerText = "🔑 Veuillez définir un mot de passe (min 6 caractères) lors de la première connexion.";
+                    return;
+                }
+            }
+            
+            if(passwordValid) {
+                currentUser = { ipn: foundUser.ipn, nom: foundUser.nom, uet: foundUser.uet, role: "magasinier", telephone: foundUser.telephone || "", equipe: foundUser.equipe || "", motDePasse: foundUser.motDePasse };
+                localStorage.setItem("magasin_current_user", JSON.stringify(currentUser));
+                document.getElementById("lockScreen").style.display = "none";
+                document.getElementById("mainApp").style.display = "block";
+                updateUIUser();
+                loadDashboard();
+                loadDemandes();
+                alert(`✅ Bienvenue ${currentUser.nom}`);
+            } else {
+                errorDiv.style.display = "block"; 
+                errorDiv.innerText = "❌ Mot de passe incorrect";
+            }
+        } else if(foundUser && foundUser.uet !== "MAGASINIER") { 
+            errorDiv.style.display = "block"; 
+            errorDiv.innerText = `⛔ ACCÈS REFUSÉ : Interface réservée aux MAGASINIERS.`; 
+        } else { 
+            errorDiv.style.display = "block"; 
+            errorDiv.innerText = "❌ Utilisateur non trouvé."; 
+        }
     } catch(err) { errorDiv.style.display = "block"; errorDiv.innerText = "❌ Erreur de connexion."; }
 }
 
 function loadSessionUser() {
     const saved = localStorage.getItem("magasin_current_user");
-    if(saved) { currentUser = JSON.parse(saved); if(currentUser.uet === "MAGASINIER") { document.getElementById("lockScreen").style.display = "none"; document.getElementById("mainApp").style.display = "block"; updateUIUser(); loadDashboard(); loadDemandes(); } }
+    if(saved) { 
+        currentUser = JSON.parse(saved); 
+        if(currentUser.uet === "MAGASINIER") { 
+            document.getElementById("lockScreen").style.display = "none"; 
+            document.getElementById("mainApp").style.display = "block"; 
+            updateUIUser(); 
+            loadDashboard(); 
+            loadDemandes(); 
+        } 
+    }
 }
 function updateUIUser() { if(currentUser) document.getElementById("sessionUserName").innerHTML = `👤 ${currentUser.nom} (${currentUser.ipn})`; }
 function logoutAndLock() { localStorage.removeItem("magasin_current_user"); location.reload(); }
@@ -2018,7 +2349,7 @@ async function searchProductToEdit() {
     if(!foundProduct) { alert(`❌ Produit non trouvé`); document.getElementById("editProductResult").style.display = "none"; return; }
     currentEditProductKey = foundKey;
     currentEditProductData = {...foundProduct};
-    document.getElementById("productFoundInfo").innerHTML = `<p><strong>✅ Produit trouvé :</strong></p><p>📦 Référence : <strong>${escapeHtml(foundProduct.reference)}</strong><br>🏷️ Désignation : ${escapeHtml(foundProduct.designation)}<br>📍 Emplacement : ${escapeHtml(foundProduct.emplacement || "-")}<br>📊 Stock actuel : <span class="current-stock-info"><span>${foundProduct.stockActuel || 0}</span></span></p>`;
+    document.getElementById("productFoundInfo").innerHTML = `<p><strong>✅ Produit trouvé :</strong></p><p>🏷️ Référence : <strong>${escapeHtml(foundProduct.reference)}</strong><br>📦 Désignation : ${escapeHtml(foundProduct.designation)}<br>📍 Emplacement : ${escapeHtml(foundProduct.emplacement || "-")}<br>📊 Stock actuel : <span class="current-stock-info"><span>${foundProduct.stockActuel || 0}</span></span></p>`;
     const currentImg = document.getElementById("currentProductImage");
     if(foundProduct.image) { currentImg.src = foundProduct.image; currentImg.style.display = "block"; }
     else { currentImg.style.display = "none"; }
