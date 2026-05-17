@@ -971,7 +971,7 @@ async function loadProductsFromFirebase() {
                 stockMax: produit.stockMax || 0,
                 description: produit.description || "",
                 quantiteParBoite: produit.quantiteParBoite || 1,
-                image: produit.image || "https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?q=80&w=1200&auto=format&fit=crop",
+                image: produit.image || "https://i.ibb.co/YF7SQ9Lw/references.png",
                 codeBarre: produit.codeBarre || ""
             });
             produitsFirebaseKeys[produit.reference] = key;
@@ -1095,7 +1095,7 @@ function afficherProduits(liste) {
         card.className = "card";
         card.innerHTML = `
             <div class="card-image-container" onclick="openImageModal('${produit.image}')">
-                <img src="${produit.image}" onerror="this.src='https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?q=80&w=1200&auto=format&fit=crop'">
+                <img src="${produit.image}" onerror="this.src='https://i.ibb.co/YF7SQ9Lw/references.png'">
             </div>
             <div class="card-content">
                 <div class="reference">
